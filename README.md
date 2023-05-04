@@ -1,16 +1,18 @@
-### Hi there 👋
+# IoTConfiguration
 
-<!--
-**ConfioT/ConfioT** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
-Here are some ideas to get you started:
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+
+# USAGE
+
+```bash
+cd ConfioT/
+spin -a IoTConfiguration.pml
+gcc -DMEMLIM=16384 -DVECTORSZ=16380 -O2 -DXUSAFE -DSAFETY -DNOCLAIM -DBITSTATE -o pan pan.c
+./pan -m1000 -E -e -n > result/result.txt
+ls *.trail | xargs -I {} sh -c "spin -k {} -t IoTConfiguration.pml > result/{}.txt"
+
+
+
+
+```
