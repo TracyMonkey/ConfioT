@@ -1,6 +1,6 @@
 # IoTConfiguration
 
-
+Currently, we only provide the the demo model for devices for verification purpose and we will responsibly update all complete models after obtaining consent from the vendors involved.
 
 
 # USAGE
