@@ -9,7 +9,7 @@ Currently, we only provide the the demo model for devices for verification purpo
 cd ConfioT/
 spin -a IoTConfiguration.pml
 gcc -DMEMLIM=16384 -DVECTORSZ=16380 -O2 -DXUSAFE -DSAFETY -DNOCLAIM -DBITSTATE -o pan pan.c
-./pan -m1000 -E -e -n > result/result.txt
+./pan -m2000 -E -e -n > result/result.txt
 ls *.trail | xargs -I {} sh -c "spin -k {} -t IoTConfiguration.pml > result/{}.txt"
 
 
