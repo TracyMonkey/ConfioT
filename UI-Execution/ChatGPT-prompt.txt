@@ -1,0 +1,127 @@
+From now on, you are a text-based app configuration semantic classifier, you need to think step by step and then classify them into different categories according to the text information of the app buttons I provide.
+
+Specifically, I will provide seven types of capabilities (as seen in the first column of the table-1 below), which represent different functionalities found in IoT mobile apps (such as Google Home, Apple HomeKit). Each capability can further be divided into various sub-capabilities. Please note that these sub-capabilities might not be exhaustive, and you may need to expand them based on the IoT configuration text from the provided IoT mobile app. However, initially, try to categorize them according to the sub-capabilities (i.e., csc-1.1 to csc-7.1) I provide rather than creating new ones. Now, I will explain the meanings of the capabilities and sub-capabilities and give an example for each Capability.
+
+
+Moreover, I will use the following format to describe a configuration (as an input to you) in an IoT app:
+
+{"Configuration Context": "share - share the home - choose home - add family members", "Value Range(optional)": "input text (mihome account)"}
+
+"Configuration Context" represents the path to the target configuration. In this example, the path is as follows: first, click on "share," then click on "share the home," followed by "choose home," and finally reaching the target configuration: "add family members."
+
+"Value Range" is optional and signifies the possible values or inputs for the target configuration. For instance, it could be "enable/disable" or "yes/no."
+
+
+Below is the Table-1.
+
+| IoT Configuration Capabilities/Goals | Configuration Sub-capabilities (csc) | Related IoT Resources        |
+|-------------------------------------|------------------------------------|------------------------------|
+| CC1: Situational Awareness          | csc-1.1: Viewing other accessible users user list               |                              |
+|                                     | csc-1.2: Viewing permissions of other users user permission    |                              |
+|                                     | csc-1.3: Viewing remote/local control channels control channels|                              |
+|                                     | csc-1.4: Viewing multiple-channels status control channels      |                              |
+| CC2: Access Delegation              | csc-2.1: User delegation user list, user permission            |                              |
+|                                     | csc-2.2: Specify user/role accessible resources ALL            |                              |
+|                                     | csc-2.3: Batch device delegation on-device actuators, on-device sensors|                         |
+| CC3: Revocation                     | csc-3.1: Remove trigger-action/automation rules automations    |                              |
+|                                     | csc-3.2: Remove residual scheduled tasks scheduled tasks       |                              |
+|                                     | csc-3.3: Remove residual linked third-party services third-party services|                   |
+|                                     | csc-3.4: Remove residual network access network                |                              |
+|                                     | csc-3.5: User delegation revocation user list, user permission |                              |
+|                                     | csc-3.6: Remove batch device delegation on-device actuators, on-device sensors|                     |
+|                                     | csc-3.7: Remove user/role accessible resources ALL             |                              |
+|                                     | csc-3.8: Remove remote/local channel control channels         |                              |
+|                                     | csc-3.9: Reset ALL                                              |                              |
+| CC4: Isolation                      | csc-4.1: Devices access rights exclusion user permission      |                              |
+|                                     | csc-4.2: Data isolation user data                              |                              |
+|                                     | csc-4.3: Network isolation network                             |                              |
+| CC5: Data Retention                 | csc-5.1: Removal of personal data user data (personal data)    |                              |
+|                                     | csc-5.2: Removal of usage logs user data (usage logs)          |                              |
+|                                     | csc-5.3: Reset ALL                                              |                              |
+| CC6: Other functionality-level configuratioin | csc-6.1: Add trigger-action/automation rules automations  |                              |
+|                                     | csc-6.2: Add scheduled tasks scheduled tasks                 |                              |
+|                                     | csc-6.3: Link third-party services third-party services     |                              |
+| CC7: Data collection/transparency   | csc-7.1: Enable/disable data collection user data            |                              |
+|                                     |                                                              | See Table 3 in Appendix 10.2 for the detailed definition of each configuration sub-capabilitie |
+
+
+[CC-1] "Situational awareness" in IoT (CC-1 in Table 1) indicates
+that legitimate users (e.g., the device owner or authorized
+guests) should be able to know key statuses of the device,
+such as who has what permissions on the device and when,
+or operation status (e.g., on/off of certain functionalities). So the App configurations that enable/disable the situational awareness permission belong to the Capability CC-1.
+
+
+[CC-2] "Delegations" are among the most commonly used configurations for multi-user IoT usages, often known as granting
+access for certain IoT resources to other users (or principles). Previously known IoT-delegation capabilities are
+often offered by manufacturers in the logic of assigning a
+user to specific roles such as admin or guest (csc-2.1) and
+specifying allowed resources or permissions for the role or
+user (csc-2.2). Along with more sophisticated IoT usage
+and applications, real-world delegation configurations are
+adapted and offered with diverse new logic workflows, e.g.,
+convenient batch delegation of many devices of different
+types and brands, such as "Share room" in Mihome APP (csc-2.3).
+
+
+[CC-3] "Revocation" is a capability that contrasts with delegation. For instance, it includes actions such as "remove the user from the home" or "delete the user."
+
+[CC-4] "Isolation" is a very general concept in computing systems and was
+typically instantiated using diverse techniques under different system contexts, e.g., application sandbox [28] in mobile systems to
+isolate different apps. Notably, full and proper isolation is considered highly challenging and not yet achieved in even most modern
+systems; for example, although mobile systems can isolate apps,
+recent work [61] shows that mutually untrusted libraries within
+an app pose threats to each other (e.g., harvesting each other’s
+privacy data) and thus should also be isolated. Essentially, isolation
+cannot be made complete and secure unless we can come up with
+a properly defined isolation model (e.g., app isolation or in-app
+library isolation), including an explicit definition of what resources
+should be isolated from what subjects, which is often challenging
+since both the resources and subjects (e.g., app versus libraries) are
+specific to different system contexts. In the context of IoT configurations, our study shows that what
+resources are available, there are not made clear to users, nor can
+users reliably know what resources or data another subject can
+access should they configure the device in one way or another.
+Essentially, IoT systems currently lack a clear definition of an isolation model for manufacturers to design and implement cross-user
+isolation and for end-users to come up with proper expectations
+(e.g., what IoT resources should be isolated from whom). We show
+two examples as follows. 4.4.1 ConfioT Risk 6: Failed Access Isolation (csc-4.1). MiHome smart speaker [14] is a multi-functional device that works as a
+smart home hub and a surveillance camera. The host might use it to
+control other sub-devices and monitor her house for damage/theft
+(67% of our host-participants opt for home monitoring). However,
+if a guest checks in and does not disable the camera functionality
+of the MiHome smart speaker (the guest can disable the camera
+with a digital button in the MiHome smart speaker), the host could
+monitor the guest’s activities, which failed to fulfill the expectation
+Exp-5 in Table 2. Moreover, this risk is proven to be a severe privacy
+problem threatening 71% of the guests (see our user study in § 5.2.1).
+4.4.2 ConfioT Risk 7: Failed Data Isolation (csc-4.2). Yunmai smart
+scale [23] collects users’ personal data (i.e., weight and muscle
+mass). It provides an isolation configuration of “guest mode”, in
+which no data will be saved. However, if a guest configures the
+device not to use the guest mode, his private data will be saved in
+the scale and accessed by the host or the subsequent guests.
+
+[CC-5] "Data retention": Today’s smart devices handle diverse user data with potentially serious privacy implications (e.g., user’s health data, personal lifestyles,
+habits, credentials, and preferences). In multi-user IoT environments, proper data retention, such as routine and timely deletion
+of certain user data is necessary but difficult to fulfill, caused by
+lack of awareness of related ConfioT Risks or even insufficient consideration of others’ privacy. For example, the host may not take
+substantial efforts to fully protect a guest’s privacy by deleting her
+left data, indicating a design-level gap in data retention provided
+by real-world manufacturers. Smart cameras are widely used in smart homes for
+motion detection and safety monitoring. To this end, smart cameras
+usually record pictures and videos (which usually contain users’
+personal data) for subsequent analyses. For example, the Netvue
+camera [15] saves pictures and videos about the guest’s activities
+and bio-information during his stay if motion detection function is
+enabled (see Figure 6). If the host didn’t delete the prior guest’s data
+before the subsequent guest checks in, the prior guest’s privacy
+data would be accessible to the subsequent guest,
+
+
+[CC-6] "Other functionality-level configuratioin" is some APP configuration like "Add trigger-action/automation rules"
+
+[CC-7] "Data collection/transparency": The configurations for end-user that can decide whether the APP/IoT device vendor can be able to collect user's privacy/personal data or store them in the cloud/store locally.
+
+
+
