@@ -455,7 +455,7 @@ inline Operation_After_Revoke(user_id, device_id){
         if
             ::  (check_policy_result == true) ->
                 printf("Allow\n")
-                assert(user_id == host);
+                assert(1 == 2);
 
             :: else ->
                 printf("Deny\n")
