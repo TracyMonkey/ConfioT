@@ -16,4 +16,4 @@ ls *.trail | xargs -I {} sh -c "spin -k {} -t IoTConfiguration.pml > result/{}.t
 
 # Questionnaire
 
-see `./Questionnaire.pdf`.
+See `./Questionnaire.pdf`.
