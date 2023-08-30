@@ -79,16 +79,11 @@ typedef PolicyBeRevoked{
     short id = -1;
 }
 
-typedef PolicyChangeState{
-    short id = -1;
-}
 // Device
 typedef Device{
     short id = -1;
     short canBeRevokedNum = 0;
-    short canChangeStateNum = 0;
     PolicyBeRevoked canBeRevoked[MAXPOLICY];
-    PolicyChangeState canChangeState[MAXPOLICY];
     Resource resources[MAXRESOURCE];
 }
 
@@ -282,8 +277,6 @@ inline Aqara_hub_SHARE(user_A, user_B, device_id){
 
                         // Policy	sub_device_state	[MiHome]	[Client_B]	[View, Control]
                         Devices[device_id].canBeRevoked[1].id = PolicyNum;
-                        Devices[device_id].canChangeState[Devices[device_id].canChangeStateNum].id = PolicyNum
-                        Devices[device_id].canChangeStateNum = Devices[device_id].canChangeStateNum + 1;
                         Policies[PolicyNum].id = PolicyNum;
                         Policies[PolicyNum].resource.id = 5;
                         Policies[PolicyNum].chans[0].id = 0;
@@ -362,8 +355,6 @@ inline Aqara_hub_CREATE_AUTOMATION(user_id, device_id){
                 printf("'Aqara_hub': user_%d create Automation\n", user_id);
                 printf("Allow\n")
                 // speaker_state (volumn，content)	[Timing]	[Client]	[Control]
-                Devices[device_id].canChangeState[Devices[device_id].canChangeStateNum].id = PolicyNum
-                Devices[device_id].canChangeStateNum = Devices[device_id].canChangeStateNum + 1;
                 Policies[PolicyNum].id = PolicyNum;
                 Policies[PolicyNum].resource.id = 5;
                 Policies[PolicyNum].chans[0].id = 7;
@@ -442,48 +433,21 @@ inline Operation_read_personaldata(user_id, device_id){
 
 inline Operation_read_accesslist(user_id, device_id){
     atomic{
-        i = 0;
-        do
-            :: (i < MAXRESOURCE) ->
-                if
-                    :: (Devices[device_id].resources[i].id == -1) -> break;
-                    :: (Devices[device_id].resources[i].id == 1) ->
-                        j = Devices[device_id].canChangeStateNum -1;
-                        do
-                            :: (j >= 0) ->
-                                k = 0;
-                                do
-                                    :: (k < MAXCHANNEL) ->
-                                        if
-                                            :: (Policies[Devices[device_id].canChangeState[j].id].chans[k].id == -1) -> break;
-                                            :: else ->
+        check_policy_result = false;
+        // {resource:1, channel_id:*, user_id, right_id}
+        res_need_check.id = 1;
+        check_policy(res_need_check, -1, user_id, 0)
+        if
+            ::  (check_policy_result == true) ->
+                printf("user_%d read accesslist of channel_%d of device_%d\n", user_id, , device_id);
 
-                                                check_policy_result = false;
-                                                // {resource:1, channel_id: Policies[Devices[device_id].canChangeState[j].id].chans[k].id, user_id, right_id}
-                                                res_need_check.id = 1;
-                                                check_policy(res_need_check, Policies[Devices[device_id].canChangeState[j].id].chans[k].id, user_id, 0)
-                                                if
-                                                    ::  (check_policy_result == true) ->
-                                                        printf("user_%d read accesslist of channel_%d of device_%d\n", user_id,Policies[Devices[device_id].canChangeState[j].id].chans[k].id, device_id);
+                printf("Allow\n")
+                assert (user_id == host);
 
-                                                        printf("Allow\n")
+            :: else ->
+                printf("Deny\n")
 
-                                                    :: else ->
-                                                        printf("Deny\n")
-                                                        assert (user_id != host);
-                                                fi;
-                                        fi;
-                                        k = k + 1;
-                                    :: else -> break;
-                                od;
-                                j = j - 1;
-                            :: else -> break;
-                        od;
-                    :: else -> skip;
-                fi;
-                i = i + 1;
-            :: else -> break;
-        od;
+        fi;
 
     }
 }
@@ -515,9 +479,9 @@ inline Operation_After_Revoke(user_id, device_id){
 
 
         check_policy_result = false;
-        // {resource:state, channel_id: *, user_id:, right_id: control}
+        // {resource:state, channel_id: *, user_id:, right_id: view}
         res_need_check.id = 5;
-        check_policy(res_need_check, -1, user_id, 1)
+        check_policy(res_need_check, -1, user_id, 0)
         if
             ::  (check_policy_result == true) ->
                 printf("After Revocation\n", user_id, device_id);
