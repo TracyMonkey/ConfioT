@@ -9,6 +9,7 @@
 #define ALLUSERS 0
 #define host 1
 #define guest 2
+#define device 3
 
 
 typedef PersonalData{
@@ -115,8 +116,8 @@ inline check_policy(_res, channel_id, user_id, right_id){
                         flag_2 = false;
                         if
                             :: (Policies[m].id == -1) -> break;
-                            :: (Policies[m].banned == true) -> goto NEXTPOLICY_1;
-                            :: (Policies[m].resource.id != 2) -> goto NEXTPOLICY_1;
+                            :: (Policies[m].id != -1 && Policies[m].banned == true) -> goto NEXTPOLICY_1;
+                            :: (Policies[m].id != -1 && Policies[m].resource.id != 2) -> goto NEXTPOLICY_1;
                             :: else -> skip;
                         fi;
                         // check channel_id in the channel list
@@ -163,8 +164,8 @@ inline check_policy(_res, channel_id, user_id, right_id){
                     :: (m >= 0) ->
                         if
                             :: (Policies[m].id == -1) -> break;
-                            :: (Policies[m].banned == true) -> goto NEXTPOLICY_2;
-                            :: (Policies[m].resource.id == _res.id) ->
+                            :: (Policies[m].id != -1 && Policies[m].banned == true) -> goto NEXTPOLICY_2;
+                            :: (Policies[m].id != -1 && Policies[m].banned != true && Policies[m].resource.id == _res.id) ->
                                 if
                                     :: (Policies[m].resource.id == 0 && (Policies[m].resource.data.userId == _res.data.userId || Policies[m].resource.data.userId == ALLUSERS)) -> skip;
                                     :: (Policies[m].resource.id == 3 && (Policies[m].resource.history.userId == _res.history.userId || Policies[m].resource.history.userId == ALLUSERS)) -> skip;
@@ -229,8 +230,8 @@ inline check_policy(_res, channel_id, user_id, right_id){
                                     :: else -> break;
                                 od;
                                 if
-
                                     :: (flag_1 == true && flag_2 == true && flag_3 == true) ->
+                                        printf("Check policy: %d\n", m);
                                         check_policy_result = true;
                                         break;
                                     // {resource, subject} matched, but {right} is "empty": means the user can not access the resouce
@@ -258,13 +259,14 @@ inline check_policy(_res, channel_id, user_id, right_id){
 // Share（Client_A→ Client_B）in “MiHome app” using “member” role
 inline Aqara_hub_SHARE(user_A, user_B, device_id){
     atomic{
-        printf("'Aqara hub': Share (user_%d → user_%d) in 'MiHome app' using 'member' role \n", user_A, user_B);
+
         check_policy_result = false;
         // {resource:1, channel_id:0, user_id, right_id}
         res_need_check.id = 1;
         check_policy(res_need_check, 0, user_A, 1)
         if
             ::  (check_policy_result == true) ->
+                printf("'Aqara hub': Share (user_%d → user_%d) in 'MiHome app' using 'member' role \n", user_A, user_B);
                 printf("Allow\n")
                         // Policy	SubDeviceList	[MiHome]	[Client_B]	[View, Control]
                         Devices[device_id].canBeRevoked[0].id = PolicyNum;
@@ -300,6 +302,16 @@ inline Aqara_hub_SHARE(user_A, user_B, device_id){
                         Policies[PolicyNum].subs[0].id = user_B;
                         Policies[PolicyNum].rights[0].id = 0;
                         PolicyNum = PolicyNum + 1;
+
+                        //Policy	data[all]	[MiHome]	[Client_B]	[View]
+                        Policies[PolicyNum].id = PolicyNum;
+                        Policies[PolicyNum].resource.id = 0;
+                        Policies[PolicyNum].resource.data.userId = ALLUSERS;
+                        Policies[PolicyNum].chans[0].id = 0;
+                        Policies[PolicyNum].subs[0].id = user_B;
+                        Policies[PolicyNum].rights[0].id = 0;
+                        PolicyNum = PolicyNum + 1;
+
             :: else ->
                 printf("Deny\n")
         fi;
@@ -310,13 +322,14 @@ inline Aqara_hub_SHARE(user_A, user_B, device_id){
 // REVOKE
 inline Aqara_hub_REVOKE(user_A, user_B, device_id){
     atomic{
-        printf("'Aqara_hub': Revoke (user_%d → user_%d) in 'MiHome app'\n", user_A, user_B);
+
         check_policy_result = false;
         // {resource:1, channel_id:0, user_id, right_id}
         res_need_check.id = 1;
         check_policy(res_need_check, 0, user_A, 2)
         if
             ::  (check_policy_result == true) ->
+                printf("'Aqara_hub': Revoke (user_%d → user_%d) in 'MiHome app'\n", user_A, user_B);
                 printf("Allow\n")
                 i = 0;
                 do
@@ -336,7 +349,58 @@ inline Aqara_hub_REVOKE(user_A, user_B, device_id){
     }
 }
 
+// Create Automation
+inline Aqara_hub_CREATE_AUTOMATION(user_id, device_id){
+    atomic{
 
+        check_policy_result = false;
+        // {resource:1, channel_id:Mihome, user_id, right_id}
+        res_need_check.id = 7;
+        check_policy(res_need_check, 0, user_id, 1)
+        if
+            ::  (check_policy_result == true) ->
+                printf("'Aqara_hub': user_%d create Automation\n", user_id);
+                printf("Allow\n")
+                // speaker_state (volumn，content)	[Timing]	[Client]	[Control]
+                Devices[device_id].canChangeState[Devices[device_id].canChangeStateNum].id = PolicyNum
+                Devices[device_id].canChangeStateNum = Devices[device_id].canChangeStateNum + 1;
+                Policies[PolicyNum].id = PolicyNum;
+                Policies[PolicyNum].resource.id = 5;
+                Policies[PolicyNum].chans[0].id = 7;
+                Policies[PolicyNum].subs[0].id = user_id;
+                Policies[PolicyNum].rights[0].id = 1;
+                Policies[PolicyNum].rights[1].id = 2;
+                PolicyNum = PolicyNum + 1;
+            :: else -> printf("Deny\n");
+        fi;
+    }
+}
+
+
+// Create Automation
+inline Aqara_hub_CREATE_AUTOMATION_alert(user_id, device_id){
+    atomic{
+
+        check_policy_result = false;
+        // {resource:1, channel_id:Mihome, user_id, right_id}
+        res_need_check.id = 8;
+        check_policy(res_need_check, 0, user_id, 1)
+        if
+            ::  (check_policy_result == true) ->
+                printf("'Aqara_hub': user_%d create Automation of alert\n", user_id);
+                printf("Allow\n")
+                // alert personal data	[Timing]	[Client]	[Control]
+                Policies[PolicyNum].id = PolicyNum;
+                Policies[PolicyNum].resource.id = 0;
+                Policies[PolicyNum].chans[0].id = 7;
+                Policies[PolicyNum].subs[0].id = device;
+                Policies[PolicyNum].rights[0].id = 1;
+                Policies[PolicyNum].rights[1].id = 2;
+                PolicyNum = PolicyNum + 1;
+            :: else -> printf("Deny\n");
+        fi;
+    }
+}
 
 
 /******************** OPERATIONS *************************/
@@ -351,7 +415,7 @@ inline Operation_read_personaldata(user_id, device_id){
                     :: (Devices[device_id].resources[i].id == 0) ->
                         if
                             :: (Devices[device_id].resources[i].data.isEmpty == false) ->
-                                printf("user_%d read personal data of user_%d through 'MiHome app'\n", user_id, Devices[device_id].resources[i].data.userId);
+
                                 check_policy_result = false;
                                 // {resource:0, channel_id:-1, user_id, right_id}
                                 res_need_check.id = 0;
@@ -359,6 +423,7 @@ inline Operation_read_personaldata(user_id, device_id){
                                 check_policy(res_need_check, -1, user_id, 0)
                                 if
                                     ::  (check_policy_result == true) ->
+                                    printf("user_%d read personal data of user_%d through 'MiHome app'\n", user_id, Devices[device_id].resources[i].data.userId);
                                         printf("Allow\n")
                                         assert (user_id == Devices[device_id].resources[i].data.userId);
                                     :: else ->
@@ -392,7 +457,6 @@ inline Operation_read_accesslist(user_id, device_id){
                                         if
                                             :: (Policies[Devices[device_id].canChangeState[j].id].chans[k].id == -1) -> break;
                                             :: else ->
-                                                printf("user_%d read accesslist of channel_%d of device_%d\n", user_id,Policies[Devices[device_id].canChangeState[j].id].chans[k].id, device_id);
 
                                                 check_policy_result = false;
                                                 // {resource:1, channel_id: Policies[Devices[device_id].canChangeState[j].id].chans[k].id, user_id, right_id}
@@ -400,6 +464,8 @@ inline Operation_read_accesslist(user_id, device_id){
                                                 check_policy(res_need_check, Policies[Devices[device_id].canChangeState[j].id].chans[k].id, user_id, 0)
                                                 if
                                                     ::  (check_policy_result == true) ->
+                                                        printf("user_%d read accesslist of channel_%d of device_%d\n", user_id,Policies[Devices[device_id].canChangeState[j].id].chans[k].id, device_id);
+
                                                         printf("Allow\n")
 
                                                     :: else ->
@@ -425,7 +491,6 @@ inline Operation_read_accesslist(user_id, device_id){
 
 inline Operation_control_subdevicelist(user_id, device_id){
     atomic{
-        printf("user_%d control SubDeviceList of device_%d\n", user_id, device_id);
 
         check_policy_result = false;
         // {resource:4, channel_id: mihome, user_id:, right_id: remove}
@@ -433,6 +498,7 @@ inline Operation_control_subdevicelist(user_id, device_id){
         check_policy(res_need_check, 0, user_id, 2)
         if
             ::  (check_policy_result == true) ->
+            printf("user_%d control SubDeviceList of device_%d\n", user_id, device_id);
                 printf("Allow\n")
                 assert(user_id == host);
 
@@ -446,7 +512,7 @@ inline Operation_control_subdevicelist(user_id, device_id){
 // Property: user_B should not be able to control the device after revocation
 inline Operation_After_Revoke(user_id, device_id){
     atomic{
-        printf("After Revocation\n", user_id, device_id);
+
 
         check_policy_result = false;
         // {resource:state, channel_id: *, user_id:, right_id: control}
@@ -454,8 +520,9 @@ inline Operation_After_Revoke(user_id, device_id){
         check_policy(res_need_check, -1, user_id, 1)
         if
             ::  (check_policy_result == true) ->
+                printf("After Revocation\n", user_id, device_id);
                 printf("Allow\n")
-                assert(1 == 2);
+                assert(user_id == host);
 
             :: else ->
                 printf("Deny\n")
@@ -464,7 +531,41 @@ inline Operation_After_Revoke(user_id, device_id){
     }
 }
 
+// device record alert data
+inline Operation_Add_alert_data(user_id, device_id){
+    atomic{
 
+
+        check_policy_result = false;
+        res_need_check.id = 0;
+        check_policy(res_need_check, -1, device, 1)
+        if
+            ::  (check_policy_result == true) ->
+            printf("Record alert data\n", user_id, device_id);
+                printf("Allow\n")
+                i = 0;
+                do
+                    :: (i < MAXRESOURCE) ->
+                        if
+                            :: (Devices[device_id].resources[i].id == -1) -> break;
+                            :: (Devices[device_id].resources[i].id == 0) ->
+                                if
+                                    :: (Devices[device_id].resources[i].data.isEmpty == true) ->
+                                        Devices[device_id].resources[i].data.isEmpty = false
+                                    :: else -> skip;
+                                fi;
+                            :: else -> skip;
+                        fi;
+                        i = i + 1;
+                    :: else -> break;
+                od;
+
+            :: else ->
+                printf("Deny\n")
+        fi;
+
+    }
+}
 
 
 
@@ -492,20 +593,62 @@ proctype ProcessHost(){
     bool COMPLETE_Operation_read_accesslist = false;
     bool COMPETE_Aqara_hub_SHARE = false;
     bool COMPETE_Aqara_hub_REVOKE = false;
+    bool COMPETE_Aqara_1 = false;
+    bool COMPETE_Aqara_2 = false;
+    bool COMPETE_Aqara_3 = false;
+    bool COMPETE_Aqara_4 = false;
 
     do
         ::
             atomic{
                 if
-                    :: (COMPETE_Aqara_hub_SHARE == false) ->
+                    ::(COMPETE_Aqara_hub_SHARE == false) ->
                         COMPETE_Aqara_hub_SHARE = true;
                         Aqara_hub_SHARE(host, guest, Devices[2].id);
+                fi;
+            }
+        ::
+            atomic{
+                if
                     :: (COMPETE_Aqara_hub_REVOKE == false) ->
                         COMPETE_Aqara_hub_REVOKE = true;
                         Aqara_hub_REVOKE(host, guest, Devices[2].id);
                 fi;
             }
-        :: else -> break;
+        ::
+            atomic{
+                if
+                    :: (COMPETE_Aqara_1 == false) ->
+                        COMPETE_Aqara_1 = true;
+                        Aqara_hub_CREATE_AUTOMATION(host, Devices[2].id);
+                fi;
+
+            }
+        ::
+            atomic{
+                if
+                    :: (COMPETE_Aqara_2 == false) ->
+                        COMPETE_Aqara_2 = true;
+                        Aqara_hub_CREATE_AUTOMATION_alert(host, Devices[2].id);
+                fi;
+
+            }
+        ::
+            atomic{
+                if
+                    :: (COMPETE_Aqara_3 == false) ->
+                        COMPETE_Aqara_3 = true;
+                        Operation_Add_alert_data(host, Devices[2].id);
+                fi;
+            }
+        ::
+            atomic{
+                if
+                    :: (COMPETE_Aqara_4 == false) ->
+                        COMPETE_Aqara_4 = true;
+                        Operation_read_personaldata(host, Devices[2].id);
+                fi;
+            }
     od;
 }
 
@@ -529,6 +672,10 @@ proctype ProcessGuest(){
 
 
     bool COMPETE_Philips_bridge_REMOTECONTROl_ON = false;
+
+
+    bool COMPETE_Aqara_guest_1 = false
+    bool COMPETE_Aqara_guest_2 = false
     do
         // :: Yunmai_smart_scale_GUESTMODE(guest, Devices[0].id, true);
         // :: Operation_read_personaldata(guest, Devices[0].id);
@@ -545,7 +692,20 @@ proctype ProcessGuest(){
 
         ::
             atomic{
-                Operation_control_subdevicelist(guest, Devices[2].id);
+                if
+                    :: (COMPETE_Aqara_guest_1 == false) ->
+                        COMPETE_Aqara_guest_1 = true;
+                        Operation_control_subdevicelist(guest, Devices[2].id);
+                fi;
+            }
+        ::
+            atomic{
+                if
+                    :: (COMPETE_Aqara_guest_2 == false) ->
+                        COMPETE_Aqara_guest_2 = true;
+                        Operation_read_personaldata(guest, Devices[2].id);
+                fi;
+
             }
         :: else -> break;
     od;
@@ -598,99 +758,17 @@ init
         Devices[2].resources[0].id = 1;
         Devices[2].resources[1].id = 4;
         Devices[2].resources[2].id = 5;
+        // host's personal data
+        Devices[2].resources[3].id = 0;
+        Devices[2].resources[3].data.userId = host;
+        Devices[2].resources[3].data.isEmpty = true;
+        // guest's personal data
+        Devices[2].resources[4].id = 0;
+        Devices[2].resources[4].data.userId = guest;
+        Devices[2].resources[4].data.isEmpty = true;
 
-
-
-        ///////////////////////
-        // Huawei speaker
-        ///////////////////////
-        Devices[3].id = 3;
-        // host's history
-        Devices[3].resources[0].id = 0;
-        Devices[3].resources[0].data.userId = host;
-        Devices[3].resources[0].data.isEmpty = false;
-        // guest's history
-        Devices[3].resources[1].id = 0;
-        Devices[3].resources[1].data.userId = guest;
-        Devices[3].resources[1].data.isEmpty = false;
-        Devices[3].resources[2].id = 6;
-        Devices[3].resources[3].id = 7;
-
-
-        ///////////////////////
-        // MiHome smart speaker
-        ///////////////////////
-        Devices[4].id = 4;
-        Devices[4].resources[0].id = 5;
 
         /******************** Default Policies *************************/
-        // ///////////////////////
-        // // Yunmai smart scale
-        // ///////////////////////
-        // // DefaultPolicy	data[Client_*] [MiHome]	[Client_owner]	[View, Control(create)]
-        // Policies[PolicyNum].id = PolicyNum;
-        // Policies[PolicyNum].resource.id = 0;
-        // Policies[PolicyNum].resource.data.userId = ALLUSERS;
-        // Policies[PolicyNum].chans[0].id = 0;
-        // Policies[PolicyNum].subs[0].id = host;
-        // Policies[PolicyNum].rights[0].id = 0;
-        // Policies[PolicyNum].rights[1].id = 1;
-        // PolicyNum = PolicyNum + 1;
-
-        // // DefaultPolicy	AccessList-—MiHome—[user]	[MiHome]	[Client_owner]	[View, Control]
-        // Policies[PolicyNum].id = PolicyNum;
-        // Policies[PolicyNum].resource.id = 1;
-        // Policies[PolicyNum].chans[0].id = 0;
-        // Policies[PolicyNum].subs[0].id = host;
-        // Policies[PolicyNum].rights[0].id = 0;
-        // Policies[PolicyNum].rights[1].id = 1;
-        // Policies[PolicyNum].rights[2].id = 2;
-        // PolicyNum = PolicyNum + 1;
-
-
-        ///////////////////////
-        // Philips hue brdige
-        ///////////////////////
-        // // DefaultPolicy	SubDeviceList	[(Local)Philips app]	[Client_owner]	[View, Control]
-        // Policies[PolicyNum].id = PolicyNum;
-        // Policies[PolicyNum].resource.id = 4;
-        // Policies[PolicyNum].chans[0].id = 2;
-        // Policies[PolicyNum].subs[0].id = host;
-        // Policies[PolicyNum].rights[0].id = 0;
-        // Policies[PolicyNum].rights[1].id = 1;
-        // Policies[PolicyNum].rights[2].id = 2;
-        // PolicyNum = PolicyNum + 1;
-        // // DefaultPolicy	sub_device_state	[(Local)Philips app]	[Client_owner]	[View, Control]
-        // Devices[1].canChangeState[Devices[1].canChangeStateNum].id = PolicyNum
-        // Devices[1].canChangeStateNum = Devices[1].canChangeStateNum + 1;
-        // Policies[PolicyNum].id = PolicyNum;
-        // Policies[PolicyNum].resource.id = 5;
-        // Policies[PolicyNum].chans[0].id = 2;
-        // Policies[PolicyNum].subs[0].id = host;
-        // Policies[PolicyNum].rights[0].id = 0;
-        // Policies[PolicyNum].rights[1].id = 1;
-        // Policies[PolicyNum].rights[2].id = 2;
-        // PolicyNum = PolicyNum + 1;
-
-
-        // // Policy-x	Constraints	[(Local)Philips app——remote control]	[Client_owner]
-        // Policies[PolicyNum].id = PolicyNum;
-        // Policies[PolicyNum].resource.id = 2;
-        // Policies[PolicyNum].chans[0].id = 3;
-        // Policies[PolicyNum].subs[0].id = host;
-        // Policies[PolicyNum].rights[0].id = 1;
-        // Policies[PolicyNum].rights[1].id = 2;
-        // PolicyNum = PolicyNum + 1;
-
-        // // DefaultPolicy	Accesslist	[(Local)Philips app]	[Client_owner]	[View, Control]
-        // Policies[PolicyNum].id = PolicyNum;
-        // Policies[PolicyNum].resource.id = 1;
-        // Policies[PolicyNum].chans[0].id = 2;
-        // Policies[PolicyNum].subs[0].id = host;
-        // Policies[PolicyNum].rights[0].id = 0;
-        // Policies[PolicyNum].rights[1].id = 1;
-        // Policies[PolicyNum].rights[2].id = 2;
-        // PolicyNum = PolicyNum + 1;
 
 
         // ///////////////////////
@@ -732,50 +810,34 @@ init
         PolicyNum = PolicyNum + 1;
 
 
-        // ///////////////////////
-        // // Huawei speaker
-        // ///////////////////////
+        // Policy	s [id=7];AutoAlert [id=8]	[MiHome]	[Client_B]	[View]
+        Policies[PolicyNum].id = PolicyNum;
+        Policies[PolicyNum].resource.id = 7;
+        Policies[PolicyNum].chans[0].id = 0;
+        Policies[PolicyNum].subs[0].id = host;
+        Policies[PolicyNum].rights[0].id = 0;
+        Policies[PolicyNum].rights[1].id = 1;
+        Policies[PolicyNum].rights[2].id = 2;
+        PolicyNum = PolicyNum + 1;
 
-        // // DefaultPolicy	history[client_*]	[HuaWei Smart Home]	[Client_owner]	[View, Control]
-        // Policies[PolicyNum].id = PolicyNum;
-        // Policies[PolicyNum].resource.id = 3;
-        // Policies[PolicyNum].resource.history.userId = ALLUSERS;
-        // Policies[PolicyNum].chans[0].id = 5;
-        // Policies[PolicyNum].subs[0].id = host;
-        // Policies[PolicyNum].rights[0].id = 0;
-        // Policies[PolicyNum].rights[1].id = 1;
-        // Policies[PolicyNum].rights[2].id = 2;
-        // PolicyNum = PolicyNum + 1;
+        Policies[PolicyNum].id = PolicyNum;
+        Policies[PolicyNum].resource.id = 8;
+        Policies[PolicyNum].chans[0].id = 0;
+        Policies[PolicyNum].subs[0].id = host;
+        Policies[PolicyNum].rights[0].id = 0;
+        Policies[PolicyNum].rights[1].id = 1;
+        Policies[PolicyNum].rights[2].id = 2;
+        PolicyNum = PolicyNum + 1;
 
-
-        // // DefaultPolicy	speaker_state (volumn，content)	[HuaWei Smart Home, Huawei speaker]	ALL	[View, Control]
-        // Devices[3].canChangeState[Devices[3].canChangeStateNum].id = PolicyNum
-        // Devices[3].canChangeStateNum = Devices[3].canChangeStateNum + 1;
-        // Policies[PolicyNum].id = PolicyNum;
-        // Policies[PolicyNum].resource.id = 5;
-        // Policies[PolicyNum].chans[0].id = 5;
-        // Policies[PolicyNum].subs[0].id = host;
-        // Policies[PolicyNum].rights[0].id = 0;
-        // Policies[PolicyNum].rights[1].id = 1;
-        // Policies[PolicyNum].rights[2].id = 2;
-        // PolicyNum = PolicyNum + 1;
-
-
-        // ///////////////////////
-        // // MiHome smart speaker
-        // ///////////////////////
-
-        // // DefaultPolicy	camera_state	[MiHome]	[Client_owner]	[View, Control]
-        // Devices[4].canChangeState[Devices[4].canChangeStateNum].id = PolicyNum
-        // Devices[4].canChangeStateNum = Devices[4].canChangeStateNum + 1;
-        // Policies[PolicyNum].id = PolicyNum;
-        // Policies[PolicyNum].resource.id = 5;
-        // Policies[PolicyNum].chans[0].id = 0;
-        // Policies[PolicyNum].subs[0].id = host;
-        // Policies[PolicyNum].rights[0].id = 0;
-        // Policies[PolicyNum].rights[1].id = 1;
-        // Policies[PolicyNum].rights[2].id = 2;
-        // PolicyNum = PolicyNum + 1;
+        // DefaultPolicy	data[Client_*] [MiHome]	[Client_owner]	[View, Control(create)]
+        Policies[PolicyNum].id = PolicyNum;
+        Policies[PolicyNum].resource.id = 0;
+        Policies[PolicyNum].resource.data.userId = ALLUSERS;
+        Policies[PolicyNum].chans[0].id = 0;
+        Policies[PolicyNum].subs[0].id = host;
+        Policies[PolicyNum].rights[0].id = 0;
+        Policies[PolicyNum].rights[1].id = 1;
+        PolicyNum = PolicyNum + 1;
 
     }
     // host: {userId = 1}
