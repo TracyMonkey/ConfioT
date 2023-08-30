@@ -297,6 +297,7 @@ inline Aqara_hub_SHARE(user_A, user_B, device_id){
                         PolicyNum = PolicyNum + 1;
 
                         //Policy	data[all]	[MiHome]	[Client_B]	[View]
+                        Devices[device_id].canBeRevoked[3].id = PolicyNum;
                         Policies[PolicyNum].id = PolicyNum;
                         Policies[PolicyNum].resource.id = 0;
                         Policies[PolicyNum].resource.data.userId = ALLUSERS;
@@ -347,7 +348,7 @@ inline Aqara_hub_CREATE_AUTOMATION(user_id, device_id){
     atomic{
 
         check_policy_result = false;
-        // {resource:1, channel_id:Mihome, user_id, right_id}
+        // {resource:7, channel_id:Mihome, user_id, right_id}
         res_need_check.id = 7;
         check_policy(res_need_check, 0, user_id, 1)
         if
