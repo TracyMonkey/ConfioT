@@ -440,7 +440,7 @@ inline Operation_read_accesslist(user_id, device_id){
         check_policy(res_need_check, -1, user_id, 0)
         if
             ::  (check_policy_result == true) ->
-                printf("user_%d read accesslist of channel_%d of device_%d\n", user_id, , device_id);
+                printf("user_%d read accesslist of device_%d\n", user_id,  device_id);
 
                 printf("Allow\n")
                 assert (user_id == host);
@@ -485,7 +485,7 @@ inline Operation_After_Revoke(user_id, device_id){
         check_policy(res_need_check, -1, user_id, 0)
         if
             ::  (check_policy_result == true) ->
-                printf("After Revocation\n", user_id, device_id);
+                printf("After Revocation\n");
                 printf("Allow\n")
                 assert(user_id == host);
 
