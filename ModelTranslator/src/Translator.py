@@ -151,10 +151,13 @@ def ParseConfigurations(file: str):
                 "ParamsLen": len(item["params"]),
                 "Constrains": Constrains,
                 "Policies": Policies,
-                "isREVOKE": False
+                "isREVOKE": False,
+                "isSHARE": False
             }
             if ("revoke" in item["configuration"].lower()):
                 config_item["isREVOKE"] = True
+            if ("share" in item["configuration"].lower()):
+                config_item["isSHARE"] = True
             DEVICE_POLICIES["Configurations"].append(config_item)
 
 

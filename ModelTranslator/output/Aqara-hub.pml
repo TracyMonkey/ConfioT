@@ -93,6 +93,7 @@ IoTDevice Device;
 Policy Policies[MAXPOLICY];
 
 short PolicyNum = 0;
+short Shared = 0;
 
 
 // Check the policy constraints
@@ -258,13 +259,12 @@ inline Aqara_hub_SHARE(userA,userB)
         check_policy_result = false;
             res_need_check.id = 1;
             check_policy(res_need_check, 0, userA, 1);
-
+        
 
 
         if
             ::  (check_policy_result == true) ->
                 printf("user_%d perform Aqara_hub_SHARE \n", userA);
-                printf("Allow\n")
                 // Create Policies
                     Device.canBeRevoked[Device.canBeRevokedNum].id = PolicyNum;
                         Device.canBeRevokedNum = Device.canBeRevokedNum + 1;
@@ -276,7 +276,7 @@ inline Aqara_hub_SHARE(userA,userB)
                     Policies[PolicyNum].rights[1].id = 1;
                     Policies[PolicyNum].rights[2].id = 2;
                     PolicyNum = PolicyNum + 1;
-
+                
                 // Create Policies
                     Device.canBeRevoked[Device.canBeRevokedNum].id = PolicyNum;
                         Device.canBeRevokedNum = Device.canBeRevokedNum + 1;
@@ -288,7 +288,7 @@ inline Aqara_hub_SHARE(userA,userB)
                     Policies[PolicyNum].rights[1].id = 1;
                     Policies[PolicyNum].rights[2].id = 2;
                     PolicyNum = PolicyNum + 1;
-
+                
                 // Create Policies
                     Device.canBeRevoked[Device.canBeRevokedNum].id = PolicyNum;
                         Device.canBeRevokedNum = Device.canBeRevokedNum + 1;
@@ -298,7 +298,7 @@ inline Aqara_hub_SHARE(userA,userB)
                         Policies[PolicyNum].subs[0].id = userB;
                     Policies[PolicyNum].rights[0].id = 0;
                     PolicyNum = PolicyNum + 1;
-
+                
                 // Create Policies
                     Device.canBeRevoked[Device.canBeRevokedNum].id = PolicyNum;
                         Device.canBeRevokedNum = Device.canBeRevokedNum + 1;
@@ -309,11 +309,12 @@ inline Aqara_hub_SHARE(userA,userB)
                         Policies[PolicyNum].subs[0].id = userB;
                     Policies[PolicyNum].rights[0].id = 0;
                     PolicyNum = PolicyNum + 1;
+                
 
 
-
+                Shared = 1;
                 :: else ->
-                printf("Deny\n")
+                skip;
         fi;
     }
 }
@@ -324,17 +325,15 @@ inline Aqara_hub_REVOKE(userA,userB)
         check_policy_result = false;
             res_need_check.id = 1;
             check_policy(res_need_check, 0, userA, 2);
-
+        
 
 
         if
             ::  (check_policy_result == true) ->
                 printf("user_%d perform Aqara_hub_REVOKE \n", userA);
-                printf("Allow\n")
 
 
-                // Revoke
-                    i = 0;
+                i = 0;
                     do
                         :: (i < MAXPOLICY) ->
                             if
@@ -346,8 +345,10 @@ inline Aqara_hub_REVOKE(userA,userB)
                         :: else -> break;
                     od;
                     Operation_After_Revoke(userB)
+
+                    Shared = 0;
                 :: else ->
-                printf("Deny\n")
+                skip;
         fi;
     }
 }
@@ -358,13 +359,12 @@ inline Aqara_hub_CREATE_AUTOMATION(userA)
         check_policy_result = false;
             res_need_check.id = 7;
             check_policy(res_need_check, 0, userA, 1);
-
+        
 
 
         if
             ::  (check_policy_result == true) ->
                 printf("user_%d perform Aqara_hub_CREATE_AUTOMATION \n", userA);
-                printf("Allow\n")
                 // Create Policies
                     Policies[PolicyNum].id = PolicyNum;
                     Policies[PolicyNum].resource.id = 5;
@@ -373,11 +373,11 @@ inline Aqara_hub_CREATE_AUTOMATION(userA)
                     Policies[PolicyNum].rights[0].id = 1;
                     Policies[PolicyNum].rights[1].id = 2;
                     PolicyNum = PolicyNum + 1;
-
+                
 
 
                 :: else ->
-                printf("Deny\n")
+                skip;
         fi;
     }
 }
@@ -388,13 +388,12 @@ inline Aqara_hub_CREATE_AUTOMATION_alert(userA)
         check_policy_result = false;
             res_need_check.id = 8;
             check_policy(res_need_check, 0, userA, 1);
-
+        
 
 
         if
             ::  (check_policy_result == true) ->
                 printf("user_%d perform Aqara_hub_CREATE_AUTOMATION_alert \n", userA);
-                printf("Allow\n")
                 // Create Policies
                     Policies[PolicyNum].id = PolicyNum;
                     Policies[PolicyNum].resource.id = 5;
@@ -403,11 +402,11 @@ inline Aqara_hub_CREATE_AUTOMATION_alert(userA)
                     Policies[PolicyNum].rights[0].id = 1;
                     Policies[PolicyNum].rights[1].id = 2;
                     PolicyNum = PolicyNum + 1;
-
+                
 
 
                 :: else ->
-                printf("Deny\n")
+                skip;
         fi;
     }
 }
@@ -436,10 +435,10 @@ inline Operation_read_personaldata(userA){
                                 if
                                     ::  (check_policy_result == true) ->
                                     printf("user_%d read personal data of user_%d through 'MiHome app'\n", userA, Device.resources[i].data.userId);
-                                        printf("Allow\n")
+
                                         assert (userA == Device.resources[i].data.userId);
                                     :: else ->
-                                        printf("Deny\n")
+                                        skip;
                                 fi;
                             :: else -> skip;
                         fi;
@@ -460,13 +459,11 @@ inline Operation_read_accesslist(userA){
         check_policy(res_need_check, -1, userA, 0)
         if
             ::  (check_policy_result == true) ->
-                printf("user_%d read accesslist\n", userA);
-
-                printf("Allow\n")
-                assert (userA == host);
+                skip;
 
             :: else ->
-                printf("Deny\n")
+                printf("user_%d failed to read accesslist\n", userA);
+                assert (1 == 2);
 
         fi;
 
@@ -484,11 +481,11 @@ inline Operation_control_subdevicelist(userA){
         if
             ::  (check_policy_result == true) ->
             printf("user_%d control SubDeviceList\n", userA);
-                printf("Allow\n")
+
                 assert(userA == host);
 
             :: else ->
-                printf("Deny\n")
+                skip;
         fi;
 
     }
@@ -498,19 +495,34 @@ inline Operation_control_subdevicelist(userA){
 inline Operation_After_Revoke(userA){
     atomic{
 
-
         check_policy_result = false;
         // {resource:state, channel_id: *, userA:, right_id: view}
         res_need_check.id = 5;
         check_policy(res_need_check, -1, userA, 0)
+
+        if
+            ::  (check_policy_result == false) ->
+                check_policy(res_need_check, -1, userA, 1)
+            :: else ->
+                skip;
+        fi;
+
+        if
+            ::  (check_policy_result == false) ->
+                check_policy(res_need_check, -1, userA, 2)
+            :: else ->
+                skip;
+        fi;
+
+
         if
             ::  (check_policy_result == true) ->
                 printf("After Revocation\n");
-                printf("Allow\n")
+
                 assert(userA == host);
 
             :: else ->
-                printf("Deny\n")
+                skip;
         fi;
 
     }
@@ -542,13 +554,13 @@ proctype ProcessHost(){
     bool COMPETE_host_2 = false;
     bool COMPETE_host_3 = false;
         bool COMPETE_host_Aqara_hub_SHARE = false;
-
+    
         bool COMPETE_host_Aqara_hub_REVOKE = false;
-
+    
         bool COMPETE_host_Aqara_hub_CREATE_AUTOMATION = false;
-
+    
         bool COMPETE_host_Aqara_hub_CREATE_AUTOMATION_alert = false;
-
+    
 
     do
         ::
@@ -564,7 +576,7 @@ proctype ProcessHost(){
                 if
                     :: (COMPETE_host_2 == false) ->
                         COMPETE_host_2 = true;
-                        Operation_Add_alert_data(host);
+                        Operation_read_accesslist(host);
                 fi;
             }
         ::
@@ -581,40 +593,40 @@ proctype ProcessHost(){
                     :: (COMPETE_host_Aqara_hub_SHARE == false) ->
                         COMPETE_host_Aqara_hub_SHARE = true;
                         Aqara_hub_SHARE(host, guest);
-
+                        
                 fi;
             }
-
+    
         ::
             atomic{
                 if
                     :: (COMPETE_host_Aqara_hub_REVOKE == false) ->
                         COMPETE_host_Aqara_hub_REVOKE = true;
                         Aqara_hub_REVOKE(host, guest);
-
+                        
                 fi;
             }
-
+    
         ::
             atomic{
                 if
                     :: (COMPETE_host_Aqara_hub_CREATE_AUTOMATION == false) ->
                         COMPETE_host_Aqara_hub_CREATE_AUTOMATION = true;
                         Aqara_hub_CREATE_AUTOMATION(host);
-
+                        
                 fi;
             }
-
+    
         ::
             atomic{
                 if
                     :: (COMPETE_host_Aqara_hub_CREATE_AUTOMATION_alert == false) ->
                         COMPETE_host_Aqara_hub_CREATE_AUTOMATION_alert = true;
                         Aqara_hub_CREATE_AUTOMATION_alert(host);
-
+                        
                 fi;
             }
-
+    
 
     od;
 }
@@ -643,13 +655,13 @@ proctype ProcessGuest(){
     bool COMPETE_guest_2 = false;
     bool COMPETE_guest_3 = false;
         bool COMPETE_guest_Aqara_hub_SHARE = false;
-
+    
         bool COMPETE_guest_Aqara_hub_REVOKE = false;
-
+    
         bool COMPETE_guest_Aqara_hub_CREATE_AUTOMATION = false;
-
+    
         bool COMPETE_guest_Aqara_hub_CREATE_AUTOMATION_alert = false;
-
+    
 
     do
         ::
@@ -663,9 +675,9 @@ proctype ProcessGuest(){
         ::
             atomic{
                 if
-                    :: (COMPETE_guest_2 == false) ->
+                    :: (COMPETE_guest_2 == false && Shared == 1) ->
                         COMPETE_guest_2 = true;
-                        Operation_Add_alert_data(guest);
+                        Operation_read_accesslist(guest);
                 fi;
             }
         ::
@@ -676,32 +688,32 @@ proctype ProcessGuest(){
                         Operation_read_personaldata(guest);
                 fi;
             }
-
-
-
-
+    
+    
+    
+    
     ::
             atomic{
                 if
                     :: (COMPETE_guest_Aqara_hub_CREATE_AUTOMATION == false) ->
                         COMPETE_guest_Aqara_hub_CREATE_AUTOMATION = true;
                         Aqara_hub_CREATE_AUTOMATION(guest);
-
+                        
                 fi;
             }
-
-
+    
+    
     ::
             atomic{
                 if
                     :: (COMPETE_guest_Aqara_hub_CREATE_AUTOMATION_alert == false) ->
                         COMPETE_guest_Aqara_hub_CREATE_AUTOMATION_alert = true;
                         Aqara_hub_CREATE_AUTOMATION_alert(guest);
-
+                        
                 fi;
             }
-
-
+    
+    
 
     od;
 }
@@ -721,16 +733,16 @@ init
             Device.id = 0;
         Device.resources[0].id = 0;
             Device.resources[0].data.userId = 1;
-            Device.resources[0].data.isEmpty = true;
+            Device.resources[0].data.isEmpty = false;
             Device.resources[1].id = 0;
             Device.resources[1].data.userId = 2;
-            Device.resources[1].data.isEmpty = true;
+            Device.resources[1].data.isEmpty = false;
             Device.resources[2].id = 5;
             Device.resources[3].id = 4;
             Device.resources[4].id = 1;
             Device.resources[5].id = 7;
             Device.resources[6].id = 8;
-
+            
 
         /******************** Default Policies *************************/
             Policies[PolicyNum].id = PolicyNum;
@@ -741,7 +753,7 @@ init
             Policies[PolicyNum].rights[1].id = 1;
             Policies[PolicyNum].rights[2].id = 2;
             PolicyNum = PolicyNum + 1;
-
+        
             Policies[PolicyNum].id = PolicyNum;
             Policies[PolicyNum].resource.id = 5;
             Policies[PolicyNum].chans[0].id = 0;
@@ -750,7 +762,7 @@ init
             Policies[PolicyNum].rights[1].id = 1;
             Policies[PolicyNum].rights[2].id = 2;
             PolicyNum = PolicyNum + 1;
-
+        
             Policies[PolicyNum].id = PolicyNum;
             Policies[PolicyNum].resource.id = 1;
             Policies[PolicyNum].chans[0].id = 0;
@@ -759,7 +771,7 @@ init
             Policies[PolicyNum].rights[1].id = 1;
             Policies[PolicyNum].rights[2].id = 2;
             PolicyNum = PolicyNum + 1;
-
+        
             Policies[PolicyNum].id = PolicyNum;
             Policies[PolicyNum].resource.id = 7;
             Policies[PolicyNum].chans[0].id = 0;
@@ -768,7 +780,7 @@ init
             Policies[PolicyNum].rights[1].id = 1;
             Policies[PolicyNum].rights[2].id = 2;
             PolicyNum = PolicyNum + 1;
-
+        
             Policies[PolicyNum].id = PolicyNum;
             Policies[PolicyNum].resource.id = 8;
             Policies[PolicyNum].chans[0].id = 0;
@@ -777,7 +789,7 @@ init
             Policies[PolicyNum].rights[1].id = 1;
             Policies[PolicyNum].rights[2].id = 2;
             PolicyNum = PolicyNum + 1;
-
+        
             Policies[PolicyNum].id = PolicyNum;
             Policies[PolicyNum].resource.id = 0;
             Policies[PolicyNum].resource.data.userId = 0;
@@ -786,7 +798,7 @@ init
             Policies[PolicyNum].rights[0].id = 0;
             Policies[PolicyNum].rights[1].id = 1;
             PolicyNum = PolicyNum + 1;
-
+        
 
 
     }

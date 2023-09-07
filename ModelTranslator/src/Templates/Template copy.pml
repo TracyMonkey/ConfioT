@@ -318,7 +318,7 @@ inline {{config.ConfigName}}(
                     od;
                     Operation_After_Revoke({{config.Params[1]}})
 
-                    Shared = 0;
+                    shared = 0;
                 {% endif -%}
 
                 {% if config.isSHARE == 1 -%}
@@ -419,22 +419,6 @@ inline Operation_After_Revoke(userA){
         // {resource:state, channel_id: *, userA:, right_id: view}
         res_need_check.id = 5;
         check_policy(res_need_check, -1, userA, 0)
-
-        if
-            ::  (check_policy_result == false) ->
-                check_policy(res_need_check, -1, userA, 1)
-            :: else ->
-                skip;
-        fi;
-
-        if
-            ::  (check_policy_result == false) ->
-                check_policy(res_need_check, -1, userA, 2)
-            :: else ->
-                skip;
-        fi;
-
-
         if
             ::  (check_policy_result == true) ->
                 printf("After Revocation\n");
@@ -617,10 +601,10 @@ init
             Device.resources[{{ loop.index0 }}].id = {{ res.id }};
             {% if res.id == 0 -%}
             Device.resources[{{ loop.index0 }}].data.userId = {{res.user}};
-            Device.resources[{{ loop.index0 }}].data.isEmpty = false;
+            Device.resources[{{ loop.index0 }}].data.isEmpty = true;
             {% elif res.id == 3 -%}
             Device.resources[{{ loop.index0 }}].history.userId = {{res.user}};
-            Device.resources[{{ loop.index0 }}].history.isEmpty = false;
+            Device.resources[{{ loop.index0 }}].history.isEmpty = true;
             {% endif -%}
         {% endfor %}
 
