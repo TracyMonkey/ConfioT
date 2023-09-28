@@ -487,6 +487,7 @@ proctype ProcessHost(){
                     :: (COMPETE_host_1 == false) ->
                         COMPETE_host_1 = true;
                         Operation_control_subdevicelist(host);
+                    :: else -> skip;
                 fi;
             }
         ::
@@ -495,6 +496,7 @@ proctype ProcessHost(){
                     :: (COMPETE_host_2 == false) ->
                         COMPETE_host_2 = true;
                         Operation_read_accesslist(host);
+                    :: else -> skip;
                 fi;
             }
         ::
@@ -503,6 +505,7 @@ proctype ProcessHost(){
                     :: (COMPETE_host_3 == false) ->
                         COMPETE_host_3 = true;
                         Operation_read_personaldata(host);
+                    :: else -> skip;
                 fi;
             }
 
@@ -517,6 +520,7 @@ proctype ProcessHost(){
                         {% else -%}
                             {{config.ConfigName}}(host, guest);
                         {% endif %}
+                    :: else -> skip;
                 fi;
             }
     {% endfor %}
@@ -561,6 +565,7 @@ proctype ProcessGuest(){
                     :: (COMPETE_guest_1 == false) ->
                         COMPETE_guest_1 = true;
                         Operation_control_subdevicelist(guest);
+                    :: else -> skip;
                 fi;
             }
         ::
@@ -569,6 +574,7 @@ proctype ProcessGuest(){
                     :: (COMPETE_guest_2 == false && Shared == 1) ->
                         COMPETE_guest_2 = true;
                         Operation_read_accesslist(guest);
+                    :: else -> skip;
                 fi;
             }
         ::
@@ -577,6 +583,7 @@ proctype ProcessGuest(){
                     :: (COMPETE_guest_3 == false) ->
                         COMPETE_guest_3 = true;
                         Operation_read_personaldata(guest);
+                    :: else -> skip;
                 fi;
             }
 
@@ -592,6 +599,7 @@ proctype ProcessGuest(){
                         {% else -%}
                             {{config.ConfigName}}(guest, host);
                         {% endif %}
+                    :: else -> skip;
                 fi;
             }
     {% endif %}
