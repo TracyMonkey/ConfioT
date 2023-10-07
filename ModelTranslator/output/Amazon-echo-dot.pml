@@ -253,61 +253,39 @@ inline check_policy(_res, channel_id, user_id, right_id){
 
 
 /******************** Configurations *************************/
-inline Aqara_hub_SHARE(userA,userB)
+inline amazonEchoDot_SHARE(userA,userB)
 {
     atomic{
         check_policy_result = false;
             res_need_check.id = 1;
-            check_policy(res_need_check, 0, userA, 1);
+            check_policy(res_need_check, 10, userA, 1);
         
 
 
         if
             ::  (check_policy_result == true) ->
-                printf("user_%d perform Aqara_hub_SHARE \n", userA);
-                // Create Policies
-                    Device.canBeRevoked[Device.canBeRevokedNum].id = PolicyNum;
-                        Device.canBeRevokedNum = Device.canBeRevokedNum + 1;
-                    Policies[PolicyNum].id = PolicyNum;
-                    Policies[PolicyNum].resource.id = 4;
-                    Policies[PolicyNum].chans[0].id = 0;
-                        Policies[PolicyNum].subs[0].id = userB;
-                    Policies[PolicyNum].rights[0].id = 0;
-                    Policies[PolicyNum].rights[1].id = 1;
-                    Policies[PolicyNum].rights[2].id = 2;
-                    PolicyNum = PolicyNum + 1;
-                
+                printf("user_%d perform amazonEchoDot_SHARE \n", userA);
                 // Create Policies
                     Device.canBeRevoked[Device.canBeRevokedNum].id = PolicyNum;
                         Device.canBeRevokedNum = Device.canBeRevokedNum + 1;
                     Policies[PolicyNum].id = PolicyNum;
                     Policies[PolicyNum].resource.id = 5;
-                    Policies[PolicyNum].chans[0].id = 0;
+                    Policies[PolicyNum].chans[0].id = 10;
                         Policies[PolicyNum].subs[0].id = userB;
                     Policies[PolicyNum].rights[0].id = 0;
-                    Policies[PolicyNum].rights[1].id = 1;
-                    Policies[PolicyNum].rights[2].id = 2;
+                    Policies[PolicyNum].rights[1].id = 4;
                     PolicyNum = PolicyNum + 1;
                 
                 // Create Policies
                     Device.canBeRevoked[Device.canBeRevokedNum].id = PolicyNum;
                         Device.canBeRevokedNum = Device.canBeRevokedNum + 1;
                     Policies[PolicyNum].id = PolicyNum;
-                    Policies[PolicyNum].resource.id = 1;
-                    Policies[PolicyNum].chans[0].id = 0;
+                    Policies[PolicyNum].resource.id = 3;
+                    Policies[PolicyNum].resource.history.userId = 0;
+                    Policies[PolicyNum].chans[0].id = 10;
                         Policies[PolicyNum].subs[0].id = userB;
                     Policies[PolicyNum].rights[0].id = 0;
-                    PolicyNum = PolicyNum + 1;
-                
-                // Create Policies
-                    Device.canBeRevoked[Device.canBeRevokedNum].id = PolicyNum;
-                        Device.canBeRevokedNum = Device.canBeRevokedNum + 1;
-                    Policies[PolicyNum].id = PolicyNum;
-                    Policies[PolicyNum].resource.id = 0;
-                    Policies[PolicyNum].resource.data.userId = 0;
-                    Policies[PolicyNum].chans[0].id = 0;
-                        Policies[PolicyNum].subs[0].id = userB;
-                    Policies[PolicyNum].rights[0].id = 0;
+                    Policies[PolicyNum].rights[1].id = 3;
                     PolicyNum = PolicyNum + 1;
                 
 
@@ -319,18 +297,39 @@ inline Aqara_hub_SHARE(userA,userB)
     }
 }
 
-inline Aqara_hub_REVOKE(userA,userB)
+inline amazonEchoDot_ENABLE_history_record(userA)
 {
     atomic{
         check_policy_result = false;
-            res_need_check.id = 1;
-            check_policy(res_need_check, 0, userA, 2);
+            res_need_check.id = 3;
+            res_need_check.history.userId = 0
+            check_policy(res_need_check, 10, userA, 5);
         
 
 
         if
             ::  (check_policy_result == true) ->
-                printf("user_%d perform Aqara_hub_REVOKE \n", userA);
+                printf("user_%d perform amazonEchoDot_ENABLE_history_record \n", userA);
+
+
+                :: else ->
+                skip;
+        fi;
+    }
+}
+
+inline amazonEchoDot_REVOKE(userA,userB)
+{
+    atomic{
+        check_policy_result = false;
+            res_need_check.id = 1;
+            check_policy(res_need_check, 10, userA, 2);
+        
+
+
+        if
+            ::  (check_policy_result == true) ->
+                printf("user_%d perform amazonEchoDot_REVOKE \n", userA);
 
 
                 i = 0;
@@ -347,64 +346,6 @@ inline Aqara_hub_REVOKE(userA,userB)
                     Operation_After_Revoke(userB)
 
                     Shared = 0;
-                :: else ->
-                skip;
-        fi;
-    }
-}
-
-inline Aqara_hub_CREATE_AUTOMATION(userA)
-{
-    atomic{
-        check_policy_result = false;
-            res_need_check.id = 7;
-            check_policy(res_need_check, 0, userA, 1);
-        
-
-
-        if
-            ::  (check_policy_result == true) ->
-                printf("user_%d perform Aqara_hub_CREATE_AUTOMATION \n", userA);
-                // Create Policies
-                    Policies[PolicyNum].id = PolicyNum;
-                    Policies[PolicyNum].resource.id = 5;
-                    Policies[PolicyNum].chans[0].id = 7;
-                        Policies[PolicyNum].subs[0].id = userA;
-                    Policies[PolicyNum].rights[0].id = 1;
-                    Policies[PolicyNum].rights[1].id = 2;
-                    PolicyNum = PolicyNum + 1;
-                
-
-
-                :: else ->
-                skip;
-        fi;
-    }
-}
-
-inline Aqara_hub_CREATE_AUTOMATION_alert(userA)
-{
-    atomic{
-        check_policy_result = false;
-            res_need_check.id = 8;
-            check_policy(res_need_check, 0, userA, 1);
-        
-
-
-        if
-            ::  (check_policy_result == true) ->
-                printf("user_%d perform Aqara_hub_CREATE_AUTOMATION_alert \n", userA);
-                // Create Policies
-                    Policies[PolicyNum].id = PolicyNum;
-                    Policies[PolicyNum].resource.id = 5;
-                    Policies[PolicyNum].chans[0].id = 7;
-                        Policies[PolicyNum].subs[0].id = userA;
-                    Policies[PolicyNum].rights[0].id = 1;
-                    Policies[PolicyNum].rights[1].id = 2;
-                    PolicyNum = PolicyNum + 1;
-                
-
-
                 :: else ->
                 skip;
         fi;
@@ -480,7 +421,7 @@ inline Operation_control_subdevicelist(userA){
         check_policy(res_need_check, 0, userA, 2)
         if
             ::  (check_policy_result == true) ->
-            printf("user_%d control SubDeviceList\n", userA);
+                printf("user_%d control SubDeviceList\n", userA);
 
                 assert(userA == host);
 
@@ -490,6 +431,39 @@ inline Operation_control_subdevicelist(userA){
 
     }
 }
+
+inline Operation_delete_history(userA, userB){
+    atomic{
+        check_policy_result = false;
+        res_need_check.id = 3;
+        check_policy(res_need_check, 0, user_id, 2)
+        if
+            :: (check_policy_result == true) ->
+                printf("user_%d delete history\n", userA);
+                i = 0;
+                do
+                    :: (i < MAXRESOURCE) ->
+                        if
+                            :: (Device.resources[i].id == -1) -> break;
+                            :: (Device.resources[i].id == 3 && Device.resources[i].userId == userB) ->
+                                if
+                                    :: (Device.resources[i].data.isEmpty != false) ->
+                                        Device.resources[i].data.isEmpty = true;
+                                    :: else -> skip;
+                                fi;
+                            :: else -> skip;
+                        fi;
+                        i = i + 1;
+                    :: else -> break;
+                od;
+
+            :: else ->
+                skip;
+
+        fi;
+    }
+}
+
 
 // Property: user_B should not be able to control the device after revocation
 inline Operation_After_Revoke(userA){
@@ -553,13 +527,12 @@ proctype ProcessHost(){
     bool COMPETE_host_1 = false;
     bool COMPETE_host_2 = false;
     bool COMPETE_host_3 = false;
-        bool COMPETE_host_Aqara_hub_SHARE = false;
+    bool COMPETE_host_4 = false;
+        bool COMPETE_host_amazonEchoDot_SHARE = false;
     
-        bool COMPETE_host_Aqara_hub_REVOKE = false;
+        bool COMPETE_host_amazonEchoDot_ENABLE_history_record = false;
     
-        bool COMPETE_host_Aqara_hub_CREATE_AUTOMATION = false;
-    
-        bool COMPETE_host_Aqara_hub_CREATE_AUTOMATION_alert = false;
+        bool COMPETE_host_amazonEchoDot_REVOKE = false;
     
 
     do
@@ -593,9 +566,18 @@ proctype ProcessHost(){
         ::
             atomic{
                 if
-                    :: (COMPETE_host_Aqara_hub_SHARE == false) ->
-                        COMPETE_host_Aqara_hub_SHARE = true;
-                        Aqara_hub_SHARE(host, guest);
+                    :: (COMPETE_host_4 == false) ->
+                        COMPETE_host_4 = true;
+                        Operation_delete_history(host, host);
+                    :: else -> skip;
+                fi;
+            }
+        ::
+            atomic{
+                if
+                    :: (COMPETE_host_amazonEchoDot_SHARE == false) ->
+                        COMPETE_host_amazonEchoDot_SHARE = true;
+                        amazonEchoDot_SHARE(host, guest);
                         
                     :: else -> skip;
                 fi;
@@ -604,9 +586,9 @@ proctype ProcessHost(){
         ::
             atomic{
                 if
-                    :: (COMPETE_host_Aqara_hub_REVOKE == false) ->
-                        COMPETE_host_Aqara_hub_REVOKE = true;
-                        Aqara_hub_REVOKE(host, guest);
+                    :: (COMPETE_host_amazonEchoDot_ENABLE_history_record == false) ->
+                        COMPETE_host_amazonEchoDot_ENABLE_history_record = true;
+                        amazonEchoDot_ENABLE_history_record(host);
                         
                     :: else -> skip;
                 fi;
@@ -615,20 +597,9 @@ proctype ProcessHost(){
         ::
             atomic{
                 if
-                    :: (COMPETE_host_Aqara_hub_CREATE_AUTOMATION == false) ->
-                        COMPETE_host_Aqara_hub_CREATE_AUTOMATION = true;
-                        Aqara_hub_CREATE_AUTOMATION(host);
-                        
-                    :: else -> skip;
-                fi;
-            }
-    
-        ::
-            atomic{
-                if
-                    :: (COMPETE_host_Aqara_hub_CREATE_AUTOMATION_alert == false) ->
-                        COMPETE_host_Aqara_hub_CREATE_AUTOMATION_alert = true;
-                        Aqara_hub_CREATE_AUTOMATION_alert(host);
+                    :: (COMPETE_host_amazonEchoDot_REVOKE == false) ->
+                        COMPETE_host_amazonEchoDot_REVOKE = true;
+                        amazonEchoDot_REVOKE(host, guest);
                         
                     :: else -> skip;
                 fi;
@@ -661,13 +632,12 @@ proctype ProcessGuest(){
     bool COMPETE_guest_1 = false;
     bool COMPETE_guest_2 = false;
     bool COMPETE_guest_3 = false;
-        bool COMPETE_guest_Aqara_hub_SHARE = false;
+    bool COMPETE_guest_4 = false;
+        bool COMPETE_guest_amazonEchoDot_SHARE = false;
     
-        bool COMPETE_guest_Aqara_hub_REVOKE = false;
+        bool COMPETE_guest_amazonEchoDot_ENABLE_history_record = false;
     
-        bool COMPETE_guest_Aqara_hub_CREATE_AUTOMATION = false;
-    
-        bool COMPETE_guest_Aqara_hub_CREATE_AUTOMATION_alert = false;
+        bool COMPETE_guest_amazonEchoDot_REVOKE = false;
     
 
     do
@@ -698,17 +668,12 @@ proctype ProcessGuest(){
                     :: else -> skip;
                 fi;
             }
-    
-    
-    
-    
-    ::
+        ::
             atomic{
                 if
-                    :: (COMPETE_guest_Aqara_hub_CREATE_AUTOMATION == false) ->
-                        COMPETE_guest_Aqara_hub_CREATE_AUTOMATION = true;
-                        Aqara_hub_CREATE_AUTOMATION(guest);
-                        
+                    :: (COMPETE_guest_4 == false) ->
+                        COMPETE_guest_4 = true;
+                        Operation_delete_history(guest, guest);
                     :: else -> skip;
                 fi;
             }
@@ -717,13 +682,15 @@ proctype ProcessGuest(){
     ::
             atomic{
                 if
-                    :: (COMPETE_guest_Aqara_hub_CREATE_AUTOMATION_alert == false) ->
-                        COMPETE_guest_Aqara_hub_CREATE_AUTOMATION_alert = true;
-                        Aqara_hub_CREATE_AUTOMATION_alert(guest);
+                    :: (COMPETE_guest_amazonEchoDot_ENABLE_history_record == false) ->
+                        COMPETE_guest_amazonEchoDot_ENABLE_history_record = true;
+                        amazonEchoDot_ENABLE_history_record(guest);
                         
                     :: else -> skip;
                 fi;
             }
+    
+    
     
     
 
@@ -743,32 +710,20 @@ init
 
         /******************** Device *************************/
             Device.id = 0;
-        Device.resources[0].id = 0;
-            Device.resources[0].data.userId = 1;
-            Device.resources[0].data.isEmpty = false;
-            Device.resources[1].id = 0;
-            Device.resources[1].data.userId = 2;
-            Device.resources[1].data.isEmpty = false;
+        Device.resources[0].id = 3;
+            Device.resources[0].history.userId = 1;
+            Device.resources[0].history.isEmpty = false;
+            Device.resources[1].id = 3;
+            Device.resources[1].history.userId = 2;
+            Device.resources[1].history.isEmpty = false;
             Device.resources[2].id = 5;
-            Device.resources[3].id = 4;
-            Device.resources[4].id = 1;
-            Device.resources[5].id = 7;
-            Device.resources[6].id = 8;
+            Device.resources[3].id = 1;
             
 
         /******************** Default Policies *************************/
             Policies[PolicyNum].id = PolicyNum;
-            Policies[PolicyNum].resource.id = 4;
-            Policies[PolicyNum].chans[0].id = 0;
-                Policies[PolicyNum].subs[0].id = host;
-            Policies[PolicyNum].rights[0].id = 0;
-            Policies[PolicyNum].rights[1].id = 1;
-            Policies[PolicyNum].rights[2].id = 2;
-            PolicyNum = PolicyNum + 1;
-        
-            Policies[PolicyNum].id = PolicyNum;
             Policies[PolicyNum].resource.id = 5;
-            Policies[PolicyNum].chans[0].id = 0;
+            Policies[PolicyNum].chans[0].id = 10;
                 Policies[PolicyNum].subs[0].id = host;
             Policies[PolicyNum].rights[0].id = 0;
             Policies[PolicyNum].rights[1].id = 1;
@@ -777,7 +732,7 @@ init
         
             Policies[PolicyNum].id = PolicyNum;
             Policies[PolicyNum].resource.id = 1;
-            Policies[PolicyNum].chans[0].id = 0;
+            Policies[PolicyNum].chans[0].id = 10;
                 Policies[PolicyNum].subs[0].id = host;
             Policies[PolicyNum].rights[0].id = 0;
             Policies[PolicyNum].rights[1].id = 1;
@@ -785,30 +740,14 @@ init
             PolicyNum = PolicyNum + 1;
         
             Policies[PolicyNum].id = PolicyNum;
-            Policies[PolicyNum].resource.id = 7;
-            Policies[PolicyNum].chans[0].id = 0;
+            Policies[PolicyNum].resource.id = 3;
+            Policies[PolicyNum].resource.history.userId = 0;
+            Policies[PolicyNum].chans[0].id = 10;
                 Policies[PolicyNum].subs[0].id = host;
             Policies[PolicyNum].rights[0].id = 0;
             Policies[PolicyNum].rights[1].id = 1;
             Policies[PolicyNum].rights[2].id = 2;
-            PolicyNum = PolicyNum + 1;
-        
-            Policies[PolicyNum].id = PolicyNum;
-            Policies[PolicyNum].resource.id = 8;
-            Policies[PolicyNum].chans[0].id = 0;
-                Policies[PolicyNum].subs[0].id = host;
-            Policies[PolicyNum].rights[0].id = 0;
-            Policies[PolicyNum].rights[1].id = 1;
-            Policies[PolicyNum].rights[2].id = 2;
-            PolicyNum = PolicyNum + 1;
-        
-            Policies[PolicyNum].id = PolicyNum;
-            Policies[PolicyNum].resource.id = 0;
-            Policies[PolicyNum].resource.data.userId = 0;
-            Policies[PolicyNum].chans[0].id = 0;
-                Policies[PolicyNum].subs[0].id = host;
-            Policies[PolicyNum].rights[0].id = 0;
-            Policies[PolicyNum].rights[1].id = 1;
+            Policies[PolicyNum].rights[3].id = 3;
             PolicyNum = PolicyNum + 1;
         
 

@@ -3,6 +3,7 @@ from PromelaGenerator import PromelaGenerator
 import os
 import json
 import re
+from optparse import OptionParser
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__)) + "/"
 
@@ -162,7 +163,12 @@ def ParseConfigurations(file: str):
 
 
 if __name__ == "__main__":
-    ParseConfigurations(BASE_DIR + "/../Aqara-hub.json")
+    parser = OptionParser()
+    parser.add_option("-c", "--configuration", dest="config", help="Configuration File")
+
+    (options, args) = parser.parse_args()
+
+    ParseConfigurations(options.config)
 
     PG = PromelaGenerator(BASE_DIR, BASE_DIR + f"/../output/{DEVICE_NAME}.pml")
     PG.Generate(DEVICE_NAME, DEVICE_RESOURCES, DEVICE_POLICIES)

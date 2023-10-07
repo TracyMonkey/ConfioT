@@ -29,7 +29,8 @@ ChannelMapper = {
     'Huawei_Smart_Home_Create_Automation': 6,
     'Timing': 7,
     'google_home_app': 8,
-    'google_home_app_Link_third_party': 9
+    'google_home_app_Link_third_party': 9,
+    'amazonEchoDot': 10
 }
 
 ALLUSERS = 0

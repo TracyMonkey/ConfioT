@@ -1,0 +1,53 @@
+{
+    "Device": "Amazon-echo-dot",
+    "Resource": [
+        "History_host",
+        "History_guest",
+        "Device_state",
+        "Access_list"
+    ],
+    "Configurations": [
+        {
+            "configuration": "[default]",
+            "Description": "",
+            "constrains-1": "",
+            "constrains-2": "",
+            "policies-1": "<Device_state, amazonEchoDot, host, (0,1,2)>",
+            "policies-2": "<Access_list, amazonEchoDot, host, (0,1,2)>",
+            "policies-3": "<History_*, amazonEchoDot, host, (0,1,2,3)>"
+        },
+        {
+            "configuration": "amazonEchoDot_SHARE",
+            "params": [
+                "userA",
+                "userB"
+            ],
+            "Description": "",
+            "constrains-1": "<Access_list, amazonEchoDot, userA, (1)>",
+            "constrains-2": "",
+            "policies-1": "<Device_state, amazonEchoDot, userB, (0,4), 1>",
+            "policies-2": "<History_*, amazonEchoDot, userB, (0,3), 1>"
+        },
+        {
+            "configuration": "amazonEchoDot_ENABLE_history_record",
+            "params": [
+                "userA"
+            ],
+            "Description": "",
+            "constrains-1": "<History_*, amazonEchoDot, userA, (5)>",
+            "constrains-2": "",
+            "policies-1": ""
+        },
+        {
+            "configuration": "amazonEchoDot_REVOKE",
+            "params": [
+                "userA",
+                "userB"
+            ],
+            "Description": "",
+            "constrains-1": "<Access_list, amazonEchoDot, userA, (2)>",
+            "constrains-2": "",
+            "policies-1": ""
+        }
+    ]
+}
