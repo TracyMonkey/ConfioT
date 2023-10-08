@@ -480,7 +480,7 @@ inline Operation_control_subdevicelist(userA){
         check_policy(res_need_check, 0, userA, 2)
         if
             ::  (check_policy_result == true) ->
-            printf("user_%d control SubDeviceList\n", userA);
+                printf("user_%d control SubDeviceList\n", userA);
 
                 assert(userA == host);
 
@@ -490,6 +490,40 @@ inline Operation_control_subdevicelist(userA){
 
     }
 }
+
+inline Operation_delete_history(userA, userB){
+    atomic{
+        check_policy_result = false;
+        res_need_check.id = 3;
+        check_policy(res_need_check, 0, userA, 2)
+        if
+            :: (check_policy_result == true) ->
+                printf("user_%d delete history\n", userA);
+                i = 0;
+                do
+                    :: (i < MAXRESOURCE) ->
+                        if
+                            :: (Device.resources[i].id == -1) -> break;
+                            :: (Device.resources[i].id == 3 && Device.resources[i].history.userId == userB) ->
+                                if
+                                    :: (Device.resources[i].history.isEmpty != false) ->
+                                        Device.resources[i].history.isEmpty = true;
+                                    :: else -> skip;
+                                fi;
+                            :: else -> skip;
+                        fi;
+                        i = i + 1;
+                    :: else -> break;
+                od;
+
+            :: else ->
+                skip;
+
+        fi;
+    }
+}
+
+
 
 // Property: user_B should not be able to control the device after revocation
 inline Operation_After_Revoke(userA){
@@ -553,6 +587,7 @@ proctype ProcessHost(){
     bool COMPETE_host_1 = false;
     bool COMPETE_host_2 = false;
     bool COMPETE_host_3 = false;
+    bool COMPETE_host_4 = false;
         bool COMPETE_host_Aqara_hub_SHARE = false;
     
         bool COMPETE_host_Aqara_hub_REVOKE = false;
@@ -587,6 +622,15 @@ proctype ProcessHost(){
                     :: (COMPETE_host_3 == false) ->
                         COMPETE_host_3 = true;
                         Operation_read_personaldata(host);
+                    :: else -> skip;
+                fi;
+            }
+        ::
+            atomic{
+                if
+                    :: (COMPETE_host_4 == false) ->
+                        COMPETE_host_4 = true;
+                        Operation_delete_history(host, host);
                     :: else -> skip;
                 fi;
             }
@@ -661,6 +705,7 @@ proctype ProcessGuest(){
     bool COMPETE_guest_1 = false;
     bool COMPETE_guest_2 = false;
     bool COMPETE_guest_3 = false;
+    bool COMPETE_guest_4 = false;
         bool COMPETE_guest_Aqara_hub_SHARE = false;
     
         bool COMPETE_guest_Aqara_hub_REVOKE = false;
@@ -695,6 +740,15 @@ proctype ProcessGuest(){
                     :: (COMPETE_guest_3 == false) ->
                         COMPETE_guest_3 = true;
                         Operation_read_personaldata(guest);
+                    :: else -> skip;
+                fi;
+            }
+        ::
+            atomic{
+                if
+                    :: (COMPETE_guest_4 == false) ->
+                        COMPETE_guest_4 = true;
+                        Operation_delete_history(guest, guest);
                     :: else -> skip;
                 fi;
             }
@@ -744,10 +798,10 @@ init
         /******************** Device *************************/
             Device.id = 0;
         Device.resources[0].id = 0;
-            Device.resources[0].data.userId = 1;
+            Device.resources[0].data.userId = host;
             Device.resources[0].data.isEmpty = false;
             Device.resources[1].id = 0;
-            Device.resources[1].data.userId = 2;
+            Device.resources[1].data.userId = guest;
             Device.resources[1].data.isEmpty = false;
             Device.resources[2].id = 5;
             Device.resources[3].id = 4;

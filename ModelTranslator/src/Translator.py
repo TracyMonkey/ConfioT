@@ -22,7 +22,7 @@ def MappingResource(resource: str):
         if (user == "*" or user == "ALLUSERS"):
             ret["user"] = MAPPER.ALLUSERS
         else:
-            ret["user"] = eval(f"MAPPER.{user}")
+            ret["user"] = user
         return ret
     elif ("History" in resource):
         ret["id"] = MAPPER.ResourceMapper["History"]
@@ -30,7 +30,7 @@ def MappingResource(resource: str):
         if (user == "*" or user == "ALLUSERS"):
             ret["user"] = MAPPER.ALLUSERS
         else:
-            ret["user"] = eval(f"MAPPER.{user}")
+            ret["user"] = user
         return ret
     else:
         for r in MAPPER.ResourceMapper:
@@ -153,12 +153,15 @@ def ParseConfigurations(file: str):
                 "Constrains": Constrains,
                 "Policies": Policies,
                 "isREVOKE": False,
-                "isSHARE": False
+                "isSHARE": False,
+                "isGUESTMODE": False
             }
             if ("revoke" in item["configuration"].lower()):
                 config_item["isREVOKE"] = True
             if ("share" in item["configuration"].lower()):
                 config_item["isSHARE"] = True
+            if ("guestmode" in item["configuration"].lower()):
+                config_item["isGUESTMODE"] = True
             DEVICE_POLICIES["Configurations"].append(config_item)
 
 

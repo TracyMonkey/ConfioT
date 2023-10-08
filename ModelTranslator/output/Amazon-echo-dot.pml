@@ -436,7 +436,7 @@ inline Operation_delete_history(userA, userB){
     atomic{
         check_policy_result = false;
         res_need_check.id = 3;
-        check_policy(res_need_check, 0, user_id, 2)
+        check_policy(res_need_check, 0, userA, 2)
         if
             :: (check_policy_result == true) ->
                 printf("user_%d delete history\n", userA);
@@ -445,10 +445,10 @@ inline Operation_delete_history(userA, userB){
                     :: (i < MAXRESOURCE) ->
                         if
                             :: (Device.resources[i].id == -1) -> break;
-                            :: (Device.resources[i].id == 3 && Device.resources[i].userId == userB) ->
+                            :: (Device.resources[i].id == 3 && Device.resources[i].history.userId == userB) ->
                                 if
-                                    :: (Device.resources[i].data.isEmpty != false) ->
-                                        Device.resources[i].data.isEmpty = true;
+                                    :: (Device.resources[i].history.isEmpty != false) ->
+                                        Device.resources[i].history.isEmpty = true;
                                     :: else -> skip;
                                 fi;
                             :: else -> skip;
@@ -711,10 +711,10 @@ init
         /******************** Device *************************/
             Device.id = 0;
         Device.resources[0].id = 3;
-            Device.resources[0].history.userId = 1;
+            Device.resources[0].history.userId = host;
             Device.resources[0].history.isEmpty = false;
             Device.resources[1].id = 3;
-            Device.resources[1].history.userId = 2;
+            Device.resources[1].history.userId = guest;
             Device.resources[1].history.isEmpty = false;
             Device.resources[2].id = 5;
             Device.resources[3].id = 1;
