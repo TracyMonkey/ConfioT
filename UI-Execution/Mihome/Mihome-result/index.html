@@ -1,0 +1,564 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <title>AppCrawler</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta http-equiv="Expires" content="-1"/>
+        <meta http-equiv="Pragma" content="no-cache"/>
+        <link href="css/styles.css" rel="stylesheet"/>
+        
+        <script type="text/javascript" src="js/d3.v2.min.js"></script>
+        <script type="text/javascript" src="js/sorttable.js"></script>
+        <script type="text/javascript">
+        //<![CDATA[
+            var tagMap = {};     
+            var SUCCEEDED_BIT = 1; 
+            var FAILED_BIT = 2; 
+            var IGNORED_BIT = 4; 
+            var PENDING_BIT = 8;
+            var CANCELED_BIT = 16;
+            function applyFilter() {
+              var mask = 0;
+              if (document.getElementById('succeeded_checkbox').checked) 
+                mask |= SUCCEEDED_BIT;  
+              if (document.getElementById('failed_checkbox').checked) 
+                mask |= FAILED_BIT; 
+              if (document.getElementById('ignored_checkbox').checked) 
+                mask |= IGNORED_BIT; 
+              if (document.getElementById('pending_checkbox').checked) 
+                mask |= PENDING_BIT; 
+              if (document.getElementById('canceled_checkbox').checked)
+                mask |= CANCELED_BIT;
+              for (var key in tagMap) { 
+                if (tagMap.hasOwnProperty(key)) { 
+                  var bitSet = tagMap[key]; 
+                  var element = document.getElementById(key);
+                  if ((bitSet & mask) != 0) 
+                    element.style.display = "table-row"; 
+                  else  
+                    element.style.display = "none";
+                }
+              }
+            }
+            function showDetails(suiteName) {
+              document.getElementById('details_view').innerHTML = "<iframe src='" + suiteName + ".html' width='100%' height='100%'></iframe>";
+            }
+            function resizeDetailsView() {
+              var headerView = document.getElementById('scalatest-header'); 
+              var detailsView = document.getElementById('details_view'); 
+              var summaryView = document.getElementById('summary_view');
+              var left = summaryView.offsetWidth + 30;
+              detailsView.style.left = left + "px"; 
+              detailsView.style.width = (window.innerWidth - left - 30) + "px";
+              detailsView.style.height = (window.innerHeight - headerView.offsetHeight - 20) + "px";
+            }
+        //]]>
+        </script>
+      </head>
+      <body onresize="resizeDetailsView()">
+        <div class="scalatest-report"> 
+          <div id="scalatest-header" class="scalatest-header-passed">
+      <div id="title">
+        AppCrawler
+      </div>
+
+      <div id="summary">
+        <p id="duration">Run completed in 70 milliseconds.</p>
+        <p id="totalTests">Total number of tests run: 393</p>
+        <p id="suiteSummary">Suites: completed 37, aborted 0</p>
+        <p id="testSummary">Tests: succeeded 393, failed 0, canceled 0, ignored 0, pending 0</p>
+      </div>
+    </div>
+          <table id="summary_view">
+            <tr id="summary_view_row_1">
+              <td id="summary_view_row_1_chart">
+                <div id="chart_div"></div>
+              </td>
+              <td id="summary_view_row_1_legend">
+                <table id="summary_view_row_1_legend_table">
+                  <tr id="summary_view_row_1_legend_table_row_succeeded">
+                    <td id="summary_view_row_1_legend_succeeded_label">Succeeded</td>
+                    <td id="summary_view_row_1_legend_succeeded_count">393</td>
+                    <td id="summary_view_row_1_legend_succeeded_percent">(100%)</td>
+                  </tr>
+                  <tr id="summary_view_row_1_legend_table_row_failed">
+                    <td id="summary_view_row_1_legend_failed_label">Failed</td>
+                    <td id="summary_view_row_1_legend_failed_count">0</td>
+                    <td id="summary_view_row_1_legend_failed_percent">(0%)</td>
+                  </tr>
+                  <tr id="summary_view_row_1_legend_table_row_canceled">
+                    <td id="summary_view_row_1_legend_canceled_label">Canceled</td>
+                    <td id="summary_view_row_1_legend_canceled_count">0</td>
+                    <td id="summary_view_row_1_legend_canceled_percent">(0%)</td>
+                  </tr>
+                  <tr id="summary_view_row_1_legend_table_row_ignored">
+                    <td id="summary_view_row_1_legend_ignored_label">Ignored</td>
+                    <td id="summary_view_row_1_legend_ignored_count">0</td>
+                    <td id="summary_view_row_1_legend_ignored_percent">(0%)</td>
+                  </tr>
+                  <tr id="summary_view_row_1_legend_table_row_pending">
+                    <td id="summary_view_row_1_legend_pending_label">Pending</td>
+                    <td id="summary_view_row_1_legend_pending_count">0</td>
+                    <td id="summary_view_row_1_legend_pending_percent">(0%)</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr id="summary_view_row_2">
+              <td id="summary_view_row_2_results" colspan="2">
+                <div id="display-filters">
+      <input id="succeeded_checkbox" name="succeeded_checkbox" type="checkbox" checked="checked" onchange="applyFilter()"/> <label id="succeeded_checkbox_label" for="passed_checkbox">Succeeded</label>
+      <input id="failed_checkbox" name="failed_checkbox" type="checkbox" checked="checked" onchange="applyFilter()"/> <label id="failed_checkbox_label" for="failed_checkbox">Failed</label>
+      <input id="canceled_checkbox" name="canceled_checkbox" type="checkbox" checked="checked" onchange="applyFilter()"/> <label id="canceled_checkbox_label" for="canceled_checkbox">Canceled</label>
+      <input id="ignored_checkbox" name="ignored_checkbox" type="checkbox" checked="checked" onchange="applyFilter()"/> <label id="ignored_checkbox_label" for="ignored_checkbox">Ignored</label>
+      <input id="pending_checkbox" name="pending_checkbox" type="checkbox" checked="checked" onchange="applyFilter()"/> <label id="pending_checkbox_label" for="pending_checkbox">Pending</label>
+    </div>
+                <table class="sortable">
+      <tr>
+        <td>Suite</td>
+        <td>Duration (ms.)</td>
+        <td>Succeeded</td>
+        <td>Failed</td>
+        <td>Canceled</td>
+        <td>Ignored</td>
+        <td>Pending</td>
+        <td>Total</td>
+      </tr>
+    <tr id="b3d88f54-b406-4c61-a79c-344227cf6397">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.android.settings.InstalledAppDetails')">com.android.settings.InstalledAppDetails</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">1</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">1</td>
+    </tr><tr id="d2488ded-e00f-4b8f-83ee-54f70183f292">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.google.android.apps.photos.ExternalPickerActivity')">com.google.android.apps.photos.ExternalPickerActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">1</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">1</td>
+    </tr><tr id="fde0570b-9ecb-4fab-8426-484cc169c706">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.google.android.permissioncontroller.GrantPermissionsActivity')">com.google.android.permissioncontroller.GrantPermissionsActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">1</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">1</td>
+    </tr><tr id="c94123da-6f5e-402a-88d6-41c13665a23c">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.AlarmDirectionTimeV2Activity')">com.xiaomi.smarthome.AlarmDirectionTimeV2Activity</a></td>
+      <td class="duration_passed_all">1</td>
+      <td class="succeeded">22</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">22</td>
+    </tr><tr id="7d6677de-408d-4f34-8489-2457b57ac86d">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.AlarmSettingV2Activity')">com.xiaomi.smarthome.AlarmSettingV2Activity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">15</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">15</td>
+    </tr><tr id="101ff2ad-2d94-4aa4-bdba-89843e2cf420">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.AlarmVideoActivity')">com.xiaomi.smarthome.AlarmVideoActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">30</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">30</td>
+    </tr><tr id="557fc8c1-1c4a-4c3e-8d77-c76fd5ce419c">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.CameraPlayerNewActivity')">com.xiaomi.smarthome.CameraPlayerNewActivity</a></td>
+      <td class="duration_passed_all">1</td>
+      <td class="succeeded">23</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">23</td>
+    </tr><tr id="df0eab04-df80-46fd-9b6f-2292229d8492">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.ChooseDeviceActivity')">com.xiaomi.smarthome.ChooseDeviceActivity</a></td>
+      <td class="duration_passed_all">2</td>
+      <td class="succeeded">12</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">12</td>
+    </tr><tr id="5a67e856-24e4-4ffb-9e3e-e55b0c1dd270">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.ChooseGatewayDevice')">com.xiaomi.smarthome.ChooseGatewayDevice</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">1</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">1</td>
+    </tr><tr id="8739d8e7-565a-449c-98c2-f3c85d60a614">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.ChooseSubCategoryDeviceActivity')">com.xiaomi.smarthome.ChooseSubCategoryDeviceActivity</a></td>
+      <td class="duration_passed_all">1</td>
+      <td class="succeeded">67</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">67</td>
+    </tr><tr id="92baccd4-8810-4ad3-a6bd-d9afb6335298">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.CommonShareActivity')">com.xiaomi.smarthome.CommonShareActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">6</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">6</td>
+    </tr><tr id="d29ce1d0-7017-4c12-91fd-5c6d3ae5cb53">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.DeviceMoreNewActivity')">com.xiaomi.smarthome.DeviceMoreNewActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">1</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">1</td>
+    </tr><tr id="45a16a97-c325-460d-88b8-0deac9bcdaa1">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.HomeRoomBackgroundActivity')">com.xiaomi.smarthome.HomeRoomBackgroundActivity</a></td>
+      <td class="duration_passed_all">1</td>
+      <td class="succeeded">13</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">13</td>
+    </tr><tr id="3e2e8ae4-01bc-4084-9ab1-f303bbf6f589">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.HomeRoomBackgroundPreviewActivity')">com.xiaomi.smarthome.HomeRoomBackgroundPreviewActivity</a></td>
+      <td class="duration_passed_all">1</td>
+      <td class="succeeded">3</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">3</td>
+    </tr><tr id="8e233171-870c-4f84-80eb-dac4630022e1">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.HomeRoomEditorActivityV2')">com.xiaomi.smarthome.HomeRoomEditorActivityV2</a></td>
+      <td class="duration_passed_all">2</td>
+      <td class="succeeded">12</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">12</td>
+    </tr><tr id="acf64909-2806-454e-8f1a-51af2d08bf90">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.HomeRoomManageListActivity')">com.xiaomi.smarthome.HomeRoomManageListActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">8</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">8</td>
+    </tr><tr id="473701a4-6191-44a5-92b4-3c0f54e40f88">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.MessageCenterOfficialListActivity')">com.xiaomi.smarthome.MessageCenterOfficialListActivity</a></td>
+      <td class="duration_passed_all">1</td>
+      <td class="succeeded">13</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">13</td>
+    </tr><tr id="c6c0cabf-f411-4158-99b4-b887eb699427">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.MessageCenterV2Activity')">com.xiaomi.smarthome.MessageCenterV2Activity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">10</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">10</td>
+    </tr><tr id="06215b32-6352-449b-bb8d-04d4c986a59c">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.MiotStoreMainActivity')">com.xiaomi.smarthome.MiotStoreMainActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">7</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">7</td>
+    </tr><tr id="fa08db39-6dfe-44a9-8081-daa8c6b9cd2c">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.MoreCameraSettingActivity')">com.xiaomi.smarthome.MoreCameraSettingActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">4</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">4</td>
+    </tr><tr id="80f1c6a2-e89e-46b1-949f-54dbd9f69062">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.OperationCommonWebViewActivity')">com.xiaomi.smarthome.OperationCommonWebViewActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">18</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">18</td>
+    </tr><tr id="1f1a1523-6379-44a5-aafb-29f8dd6c0c9f">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.ResetDevicePage')">com.xiaomi.smarthome.ResetDevicePage</a></td>
+      <td class="duration_passed_all">1</td>
+      <td class="succeeded">22</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">22</td>
+    </tr><tr id="f394bfaf-d6dd-4d68-85ef-20d162627356">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.RoteSettingActivity')">com.xiaomi.smarthome.RoteSettingActivity</a></td>
+      <td class="duration_passed_all">1</td>
+      <td class="succeeded">2</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">2</td>
+    </tr><tr id="e3611ce3-cbf3-4dfe-a1cc-9e0c4884a67a">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.SDCardCloudVideoActivity')">com.xiaomi.smarthome.SDCardCloudVideoActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">23</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">23</td>
+    </tr><tr id="80f3f4ff-5f64-4357-892d-34d557abc14f">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.ScanBarcodeActivity')">com.xiaomi.smarthome.ScanBarcodeActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">7</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">7</td>
+    </tr><tr id="87cfd37c-9e5d-436e-a6ea-baa9ad837d36">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.ScanChooseBluetoothDevice')">com.xiaomi.smarthome.ScanChooseBluetoothDevice</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">2</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">2</td>
+    </tr><tr id="758fa6e9-93b6-47c6-8c7e-85c9af71354d">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.SleepSettingActivity')">com.xiaomi.smarthome.SleepSettingActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">4</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">4</td>
+    </tr><tr id="323e3076-d18b-4670-8062-645a856d5f20">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.SmartConfigMainActivity')">com.xiaomi.smarthome.SmartConfigMainActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">4</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">4</td>
+    </tr><tr id="809685af-a833-4bbe-a91f-ecd933d9d2c6">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.SmartHomeMainActivity')">com.xiaomi.smarthome.SmartHomeMainActivity</a></td>
+      <td class="duration_passed_all">1</td>
+      <td class="succeeded">6</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">6</td>
+    </tr><tr id="089bb522-8ae5-4640-b6f5-359111ea1f89">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.ViewSettingActivity')">com.xiaomi.smarthome.ViewSettingActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">6</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">6</td>
+    </tr><tr id="05e99ef8-5b02-4f74-8ee4-47d9a45ce064">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.WdrSettingActivity')">com.xiaomi.smarthome.WdrSettingActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">2</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">2</td>
+    </tr><tr id="a9579a5e-e0ef-4d6e-8fd5-f02dd36e4298">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.WebShellActivity')">com.xiaomi.smarthome.WebShellActivity</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">9</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">9</td>
+    </tr><tr id="b6c7467a-bccc-435b-834b-8b60aceb951c">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.场景')">com.xiaomi.smarthome.场景</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">1</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">1</td>
+    </tr><tr id="e7f5b3ff-1eb0-447c-9213-35ec45234c4c">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.画面变动推送')">com.xiaomi.smarthome.画面变动推送</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">2</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">2</td>
+    </tr><tr id="fbb1e138-c5a0-4ef6-b9a1-882c31bbec73">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.看家时间段')">com.xiaomi.smarthome.看家时间段</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">12</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">12</td>
+    </tr><tr id="67d43812-e2c4-4eed-8aa8-911f77af0d07">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.米家')">com.xiaomi.smarthome.米家</a></td>
+      <td class="duration_passed_all">0</td>
+      <td class="succeeded">17</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">17</td>
+    </tr><tr id="1ff868b0-f5d9-452a-b57a-90cc84aa4b0e">
+      <td class="suite_name_passed_all"><a href="javascript: showDetails('com.xiaomi.smarthome.自动切换')">com.xiaomi.smarthome.自动切换</a></td>
+      <td class="duration_passed_all">1</td>
+      <td class="succeeded">6</td>
+      <td class="failed_zero">0</td>
+      <td class="canceled_zero">0</td>
+      <td class="ignored_zero">0</td>
+      <td class="pending_zero">0</td>
+      <td class="total_passed_all">6</td>
+    </tr>
+    </table>
+              </td>
+            </tr>
+          </table>
+          <div id="details_view">
+            <span id="click_suite_hint">Click on suite name to view details.</span> <br/>
+            <span id="click_column_hint">Click on column name to sort.</span>
+          </div>
+        </div>
+        <script type="text/javascript">
+          /* modified from http://www.permadi.com/tutorial/cssGettingBackgroundColor/index.html - */
+function getBgColor(elementId)
+{
+  var element = document.getElementById(elementId);
+  if (element.currentStyle)
+    return element.currentStyle.backgroundColor;
+  if (window.getComputedStyle)
+  {
+    var elementStyle=window.getComputedStyle(element,"");
+    if (elementStyle)
+      return elementStyle.getPropertyValue("background-color");
+  }
+  // Return 0 if both methods failed.
+  return 0;
+}
+var data = [393, 0, 0, 0, 0];
+var color = [getBgColor('summary_view_row_1_legend_succeeded_label'), 
+             getBgColor('summary_view_row_1_legend_failed_label'), 
+             getBgColor('summary_view_row_1_legend_ignored_label'), 
+             getBgColor('summary_view_row_1_legend_pending_label'), 
+             getBgColor('summary_view_row_1_legend_canceled_label')
+            ];
+var width = document.getElementById('chart_div').offsetWidth,
+    height = document.getElementById('chart_div').offsetHeight,
+    outerRadius = Math.min(width, height) / 2,
+    innerRadius = 0,
+    donut = d3.layout.pie(),
+    arc = d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius);
+var vis = d3.select("#chart_div")
+            .append("svg")
+            .data([data])
+            .attr("width", width)
+            .attr("height", height);
+var arcs = vis.selectAll("g.arc")
+              .data(donut)
+              .enter().append("g")
+              .attr("class", "arc")
+              .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
+arcs.append("path")
+    .attr("fill", function(d, i) { return color[i]; })
+    .attr("d", arc);
+
+        </script>
+        <script type="text/javascript">
+          tagMap = { 
+"45a16a97-c325-460d-88b8-0deac9bcdaa1": 1, 
+"80f3f4ff-5f64-4357-892d-34d557abc14f": 1, 
+"8e233171-870c-4f84-80eb-dac4630022e1": 1, 
+"101ff2ad-2d94-4aa4-bdba-89843e2cf420": 1, 
+"557fc8c1-1c4a-4c3e-8d77-c76fd5ce419c": 1, 
+"fa08db39-6dfe-44a9-8081-daa8c6b9cd2c": 1, 
+"8739d8e7-565a-449c-98c2-f3c85d60a614": 1, 
+"df0eab04-df80-46fd-9b6f-2292229d8492": 1, 
+"67d43812-e2c4-4eed-8aa8-911f77af0d07": 1, 
+"a9579a5e-e0ef-4d6e-8fd5-f02dd36e4298": 1, 
+"5a67e856-24e4-4ffb-9e3e-e55b0c1dd270": 1, 
+"d2488ded-e00f-4b8f-83ee-54f70183f292": 1, 
+"fde0570b-9ecb-4fab-8426-484cc169c706": 1, 
+"87cfd37c-9e5d-436e-a6ea-baa9ad837d36": 1, 
+"c94123da-6f5e-402a-88d6-41c13665a23c": 1, 
+"c6c0cabf-f411-4158-99b4-b887eb699427": 1, 
+"92baccd4-8810-4ad3-a6bd-d9afb6335298": 1, 
+"f394bfaf-d6dd-4d68-85ef-20d162627356": 1, 
+"06215b32-6352-449b-bb8d-04d4c986a59c": 1, 
+"05e99ef8-5b02-4f74-8ee4-47d9a45ce064": 1, 
+"323e3076-d18b-4670-8062-645a856d5f20": 1, 
+"fbb1e138-c5a0-4ef6-b9a1-882c31bbec73": 1, 
+"7d6677de-408d-4f34-8489-2457b57ac86d": 1, 
+"473701a4-6191-44a5-92b4-3c0f54e40f88": 1, 
+"acf64909-2806-454e-8f1a-51af2d08bf90": 1, 
+"80f1c6a2-e89e-46b1-949f-54dbd9f69062": 1, 
+"d29ce1d0-7017-4c12-91fd-5c6d3ae5cb53": 1, 
+"758fa6e9-93b6-47c6-8c7e-85c9af71354d": 1, 
+"e7f5b3ff-1eb0-447c-9213-35ec45234c4c": 1, 
+"1ff868b0-f5d9-452a-b57a-90cc84aa4b0e": 1, 
+"809685af-a833-4bbe-a91f-ecd933d9d2c6": 1, 
+"3e2e8ae4-01bc-4084-9ab1-f303bbf6f589": 1, 
+"b3d88f54-b406-4c61-a79c-344227cf6397": 1, 
+"b6c7467a-bccc-435b-834b-8b60aceb951c": 1, 
+"e3611ce3-cbf3-4dfe-a1cc-9e0c4884a67a": 1, 
+"089bb522-8ae5-4640-b6f5-359111ea1f89": 1, 
+"1f1a1523-6379-44a5-aafb-29f8dd6c0c9f": 1};
+applyFilter();
+        </script>
+        <script type="text/javascript">
+          //<![CDATA[
+          resizeDetailsView();
+          //]]>
+        </script>
+      </body>
+    </html>

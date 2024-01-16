@@ -1,0 +1,43 @@
+{
+    "Device": "MiHome-smart-router",
+    "Resource": [
+        "Device_state",
+        "Subdevice_list",
+        "Access_list"
+    ],
+    "Configurations": [
+        {
+            "configuration": "[default]",
+            "Description": "",
+            "constrains-1": "",
+            "constrains-2": "",
+            "policies-1": "<Subdevice_list, MiHome, host, (0,1,2)>",
+            "policies-2": "<Device_state, MiHome, host, (0,1,2)>",
+            "policies-3": "<Access_list, MiHome, host, (0,1,2)>"
+        },
+        {
+            "configuration": "Mihome_smart_router_SHARE",
+            "params": [
+                "userA",
+                "userB"
+            ],
+            "Description": "",
+            "constrains-1": "<Access_list, MiHome, userA, (1)>",
+            "constrains-2": "",
+            "policies-1": "<Subdevice_list, MiHome, userB, (0,1,2), 1>",
+            "policies-2": "<Device_state, MiHome, userB, (0,1,2), 1>",
+            "policies-3": "<Access_list, MiHome, userB, (0), 1>"
+        },
+        {
+            "configuration": "Mihome_smart_router_REVOKE",
+            "params": [
+                "userA",
+                "userB"
+            ],
+            "Description": "",
+            "constrains-1": "<Access_list, MiHome, userA, (2)>",
+            "constrains-2": "",
+            "policies-1": ""
+        }
+    ]
+}
